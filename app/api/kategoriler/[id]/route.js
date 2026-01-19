@@ -17,15 +17,26 @@ export async function GET(request, context) {
             return NextResponse.json({ error: 'Kategori bulunamadı' }, { status: 404 });
         }
 
-        // Bu kategorideki markaları da getir (ürünler üzerinden)
+        // Bu kategorideki markaları ürünler üzerinden getir
         const [markalar] = await pool.query(`
-            SELECT DISTINCT m.* FROM markalar m
+            SELECT DISTINCT m.*, m.ad as name FROM markalar m
             INNER JOIN urunler u ON m.id = u.marka_id
             WHERE u.kategori_id = ? AND m.aktif = 1
             ORDER BY m.sira ASC, m.ad ASC
         `, [rows[0].id]);
 
-        return NextResponse.json({ ...rows[0], markalar });
+        // Admin panel uyumluluğu için alias ekle
+        const kategori = {
+            ...rows[0],
+            name: rows[0].ad,
+            description: rows[0].aciklama,
+            image: rows[0].resim,
+            status: rows[0].aktif ? 'Aktif' : 'Pasif',
+            sort_order: rows[0].sira,
+            markalar
+        };
+
+        return NextResponse.json(kategori);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -41,11 +52,19 @@ export async function PUT(request, context) {
     try {
         const { id } = await context.params;
         const data = await request.json();
-        const { ad, slug, icon, resim, aciklama, aktif, sira } = data;
+
+        // Admin panel ve database uyumluluğu
+        const ad = data.ad || data.name;
+        const slug = data.slug;
+        const icon = data.icon;
+        const resim = data.resim || data.image;
+        const aciklama = data.aciklama || data.description;
+        const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
+        const sira = data.sira || data.sort_order || 0;
 
         await pool.query(
             'UPDATE kategoriler SET ad=?, slug=?, icon=?, resim=?, aciklama=?, aktif=?, sira=? WHERE id=?',
-            [ad, slug, icon, resim, aciklama, aktif ?? 1, sira ?? 0, id]
+            [ad, slug, icon, resim, aciklama, aktif, sira, id]
         );
 
         return NextResponse.json({ message: 'Kategori başarıyla güncellendi' });

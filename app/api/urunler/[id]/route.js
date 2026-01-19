@@ -33,7 +33,21 @@ export async function GET(request, context) {
             return NextResponse.json({ error: 'Ürün bulunamadı' }, { status: 404 });
         }
 
-        return NextResponse.json(rows[0]);
+        // Admin panel uyumluluğu için alias ekle
+        const urun = {
+            ...rows[0],
+            name: rows[0].ad,
+            short_description: rows[0].kisa_aciklama,
+            description: rows[0].aciklama,
+            image: rows[0].resim,
+            gallery: rows[0].galeri,
+            documents: rows[0].dokumanlar,
+            accessories: rows[0].aksesuarlar,
+            status: rows[0].aktif ? 'Aktif' : 'Pasif',
+            featured: rows[0].one_cikan === 1
+        };
+
+        return NextResponse.json(urun);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -49,27 +63,34 @@ export async function PUT(request, context) {
     try {
         const { id } = await context.params;
         const data = await request.json();
-        const {
-            ad, slug, kategori_id, marka_id, kisa_aciklama, aciklama,
-            resim, galeri, ozellikler, dokumanlar, aksesuarlar,
-            fiyat, aktif, one_cikan, sira, meta_title, meta_description
-        } = data;
+
+        // Admin panel ve database uyumluluğu
+        const ad = data.ad || data.name;
+        const slug = data.slug;
+        const kategori_id = data.kategori_id;
+        const marka_id = data.marka_id;
+        const kisa_aciklama = data.kisa_aciklama || data.short_description;
+        const aciklama = data.aciklama || data.description;
+        const resim = data.resim || data.image;
+        const galeri = data.galeri || data.gallery;
+        const dokumanlar = data.dokumanlar || data.documents;
+        const aksesuarlar = data.aksesuarlar || data.accessories;
+        const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
+        const one_cikan = data.featured || data.one_cikan ? 1 : 0;
+        const sira = data.sira || data.sort_order || 0;
 
         await pool.query(
             `UPDATE urunler SET 
              ad=?, slug=?, kategori_id=?, marka_id=?, kisa_aciklama=?, aciklama=?,
-             resim=?, galeri=?, ozellikler=?, dokumanlar=?, aksesuarlar=?,
-             fiyat=?, aktif=?, one_cikan=?, sira=?, meta_title=?, meta_description=?
+             resim=?, galeri=?, dokumanlar=?, aksesuarlar=?, aktif=?, one_cikan=?, sira=?
              WHERE id=?`,
             [
                 ad, slug, kategori_id, marka_id, kisa_aciklama, aciklama,
                 resim,
                 galeri ? JSON.stringify(galeri) : null,
-                ozellikler ? JSON.stringify(ozellikler) : null,
                 dokumanlar ? JSON.stringify(dokumanlar) : null,
                 aksesuarlar ? JSON.stringify(aksesuarlar) : null,
-                fiyat, aktif ?? 1, one_cikan ?? 0, sira ?? 0,
-                meta_title, meta_description,
+                aktif, one_cikan, sira,
                 id
             ]
         );

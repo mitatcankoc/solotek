@@ -11,7 +11,15 @@ export async function GET(request, { params }) {
             return NextResponse.json({ error: 'Sürücü bulunamadı' }, { status: 404 });
         }
 
-        return NextResponse.json(rows[0]);
+        // Admin panel uyumluluğu için alias ekle
+        const surucu = {
+            ...rows[0],
+            urun_adi: rows[0].model || rows[0].baslik,
+            surucu_adi: rows[0].baslik,
+            status: rows[0].aktif ? 'Aktif' : 'Pasif'
+        };
+
+        return NextResponse.json(surucu);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -27,14 +35,23 @@ export async function PUT(request, { params }) {
     try {
         const { id } = await params;
         const data = await request.json();
-        const { baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi, aktif } = data;
+
+        // Admin panel ve database uyumluluğu
+        const baslik = data.baslik || data.surucu_adi || data.urun_adi;
+        const model = data.model || data.urun_adi;
+        const aciklama = data.aciklama;
+        const versiyon = data.versiyon;
+        const isletim_sistemi = data.isletim_sistemi;
+        const dosya_url = data.dosya_url;
+        const dosya_boyutu = data.dosya_boyutu;
+        const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
 
         await pool.query(
             `UPDATE suruculer SET 
-                baslik = ?, slug = ?, aciklama = ?, kategori = ?, marka = ?, model = ?,
-                versiyon = ?, isletim_sistemi = ?, dosya_url = ?, dosya_boyutu = ?, dosya_tipi = ?, aktif = ?
+                baslik = ?, model = ?, aciklama = ?, versiyon = ?, isletim_sistemi = ?, 
+                dosya_url = ?, dosya_boyutu = ?, aktif = ?
              WHERE id = ?`,
-            [baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi, aktif ?? 1, id]
+            [baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif, id]
         );
 
         return NextResponse.json({ message: 'Sürücü güncellendi' });
