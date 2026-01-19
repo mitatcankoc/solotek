@@ -11,15 +11,16 @@ export async function GET(request) {
         const markaSlug = searchParams.get('marka_slug');
         const featured = searchParams.get('featured');
         const search = searchParams.get('search');
+        const limit = searchParams.get('limit');
 
         let query = `
             SELECT u.*, 
-                   uk.name as kategori_adi, uk.slug as kategori_slug,
-                   m.name as marka_adi, m.slug as marka_slug, m.logo as marka_logo
+                   k.ad as kategori_adi, k.slug as kategori_slug,
+                   m.ad as marka_adi, m.slug as marka_slug, m.logo as marka_logo
             FROM urunler u
-            INNER JOIN urun_kategorileri uk ON u.kategori_id = uk.id
-            INNER JOIN markalar m ON u.marka_id = m.id
-            WHERE 1=1
+            LEFT JOIN kategoriler k ON u.kategori_id = k.id
+            LEFT JOIN markalar m ON u.marka_id = m.id
+            WHERE u.aktif = 1
         `;
         let params = [];
 
@@ -29,7 +30,7 @@ export async function GET(request) {
         }
 
         if (kategoriSlug) {
-            query += ' AND uk.slug = ?';
+            query += ' AND k.slug = ?';
             params.push(kategoriSlug);
         }
 
@@ -44,33 +45,31 @@ export async function GET(request) {
         }
 
         if (featured === 'true') {
-            query += ' AND u.featured = 1';
+            query += ' AND u.one_cikan = 1';
         }
 
         if (search) {
-            query += ' AND (u.name LIKE ? OR u.description LIKE ? OR u.short_description LIKE ?)';
+            query += ' AND (u.ad LIKE ? OR u.aciklama LIKE ? OR u.kisa_aciklama LIKE ?)';
             const searchTerm = `%${search}%`;
             params.push(searchTerm, searchTerm, searchTerm);
         }
 
-        query += ' ORDER BY u.featured DESC, u.sort_order ASC, u.name ASC';
+        query += ' ORDER BY u.one_cikan DESC, u.sira ASC, u.ad ASC';
+
+        if (limit) {
+            query += ` LIMIT ${parseInt(limit)}`;
+        }
 
         const [rows] = await pool.query(query, params);
 
-        // Features JSON parse et
-        const products = rows.map(row => ({
-            ...row,
-            features: row.features ? JSON.parse(row.features) : [],
-            gallery: row.gallery ? JSON.parse(row.gallery) : [],
-            specifications: row.specifications ? JSON.parse(row.specifications) : {},
-            documents: row.documents ? JSON.parse(row.documents) : [],
-            accessories: row.accessories ? JSON.parse(row.accessories) : []
-        }));
-
-        return NextResponse.json(products);
+        return NextResponse.json(rows);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 

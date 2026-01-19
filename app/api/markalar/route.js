@@ -11,27 +11,20 @@ export async function GET(request) {
             SELECT m.*, COUNT(DISTINCT u.id) as urun_sayisi
             FROM markalar m
             LEFT JOIN urunler u ON m.id = u.marka_id
+            WHERE m.aktif = 1
+            GROUP BY m.id
+            ORDER BY m.sira ASC, m.ad ASC
         `;
-        let params = [];
 
-        if (kategoriId) {
-            query = `
-                SELECT m.*, COUNT(DISTINCT u.id) as urun_sayisi
-                FROM markalar m
-                INNER JOIN kategori_marka km ON m.id = km.marka_id
-                LEFT JOIN urunler u ON m.id = u.marka_id
-                WHERE km.kategori_id = ?
-            `;
-            params = [kategoriId];
-        }
-
-        query += ' GROUP BY m.id ORDER BY m.sort_order ASC, m.name ASC';
-
-        const [rows] = await pool.query(query, params);
+        const [rows] = await pool.query(query);
         return NextResponse.json(rows);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
