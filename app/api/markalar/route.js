@@ -17,7 +17,17 @@ export async function GET(request) {
         `;
 
         const [rows] = await pool.query(query);
-        return NextResponse.json(rows);
+
+        // Admin panel uyumluluğu için alias ekle
+        const result = rows.map(row => ({
+            ...row,
+            name: row.ad,
+            description: row.aciklama,
+            status: row.aktif ? 'Aktif' : 'Pasif',
+            sort_order: row.sira
+        }));
+
+        return NextResponse.json(result);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -32,7 +42,13 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { ad, slug, logo, aciklama, website, aktif, sira } = data;
+        const ad = data.ad || data.name;
+        const slug = data.slug;
+        const logo = data.logo;
+        const aciklama = data.aciklama || data.description;
+        const website = data.website;
+        const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
+        const sira = data.sira || data.sort_order || 0;
 
         // Slug otomatik oluştur
         const finalSlug = slug || ad.toLowerCase()
@@ -42,7 +58,7 @@ export async function POST(request) {
 
         const [result] = await pool.query(
             'INSERT INTO markalar (ad, slug, logo, aciklama, website, aktif, sira) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [ad, finalSlug, logo, aciklama, website, aktif ?? 1, sira || 0]
+            [ad, finalSlug, logo, aciklama, website, aktif, sira]
         );
 
         return NextResponse.json({
@@ -73,9 +89,6 @@ export async function DELETE(request) {
         if (products[0].count > 0) {
             return NextResponse.json({ error: 'Bu markada ürünler var, önce ürünleri silin' }, { status: 400 });
         }
-
-        // Kategori-marka ilişkilerini sil
-        await pool.query('DELETE FROM kategori_marka WHERE marka_id = ?', [id]);
 
         // Markayı sil
         await pool.query('DELETE FROM markalar WHERE id = ?', [id]);

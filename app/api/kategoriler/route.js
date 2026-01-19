@@ -13,7 +13,18 @@ export async function GET() {
             GROUP BY k.id
             ORDER BY k.sira ASC, k.ad ASC
         `);
-        return NextResponse.json(rows);
+
+        // Admin panel uyumluluğu için alias ekle
+        const result = rows.map(row => ({
+            ...row,
+            name: row.ad,
+            description: row.aciklama,
+            image: row.resim,
+            status: row.aktif ? 'Aktif' : 'Pasif',
+            sort_order: row.sira
+        }));
+
+        return NextResponse.json(result);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -28,7 +39,13 @@ export async function GET() {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { ad, slug, icon, resim, aciklama, aktif, sira } = data;
+        const ad = data.ad || data.name;
+        const slug = data.slug;
+        const icon = data.icon;
+        const resim = data.resim || data.image;
+        const aciklama = data.aciklama || data.description;
+        const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
+        const sira = data.sira || data.sort_order || 0;
 
         // Slug otomatik oluştur
         const finalSlug = slug || ad.toLowerCase()
@@ -38,7 +55,7 @@ export async function POST(request) {
 
         const [result] = await pool.query(
             'INSERT INTO kategoriler (ad, slug, icon, resim, aciklama, aktif, sira) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [ad, finalSlug, icon || 'fa-box', resim, aciklama, aktif ?? 1, sira || 0]
+            [ad, finalSlug, icon || 'fa-box', resim, aciklama, aktif, sira]
         );
 
         return NextResponse.json({
@@ -50,7 +67,7 @@ export async function POST(request) {
         if (error.code === 'ER_DUP_ENTRY') {
             return NextResponse.json({ error: 'Bu slug zaten kullanılıyor' }, { status: 400 });
         }
-        return NextResponse.json({ error: 'Kategori eklenirken hata oluştu' }, { status: 500 });
+        return NextResponse.json({ error: 'Kategori eklenirken hata oluştu', message: error.message }, { status: 500 });
     }
 }
 

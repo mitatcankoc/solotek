@@ -6,7 +6,6 @@ export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const search = searchParams.get('search');
-        const marka = searchParams.get('marka');
 
         let query = 'SELECT * FROM suruculer WHERE aktif = 1';
         const params = [];
@@ -16,15 +15,19 @@ export async function GET(request) {
             params.push(`%${search}%`, `%${search}%`, `%${search}%`);
         }
 
-        if (marka) {
-            query += ' AND marka = ?';
-            params.push(marka);
-        }
-
         query += ' ORDER BY baslik ASC, created_at DESC';
 
         const [rows] = await pool.query(query, params);
-        return NextResponse.json(rows);
+
+        // Admin panel uyumluluğu için alias ekle
+        const result = rows.map(row => ({
+            ...row,
+            urun_adi: row.baslik || row.model || '',
+            surucu_adi: row.baslik || '',
+            status: row.aktif ? 'Aktif' : 'Pasif'
+        }));
+
+        return NextResponse.json(result);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -39,12 +42,20 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi } = data;
+        // Admin panel alanlarını destekle
+        const baslik = data.baslik || data.surucu_adi || data.urun_adi;
+        const model = data.model || data.urun_adi;
+        const aciklama = data.aciklama;
+        const versiyon = data.versiyon;
+        const isletim_sistemi = data.isletim_sistemi;
+        const dosya_url = data.dosya_url;
+        const dosya_boyutu = data.dosya_boyutu;
+        const aktif = data.status === 'Aktif' || data.aktif === 1 || data.aktif === true ? 1 : 0;
 
         const [result] = await pool.query(
-            `INSERT INTO suruculer (baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi, aktif) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-            [baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi]
+            `INSERT INTO suruculer (baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif === 0 ? 0 : 1]
         );
 
         return NextResponse.json({
@@ -53,7 +64,7 @@ export async function POST(request) {
         }, { status: 201 });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Sürücü eklenirken hata oluştu', message: error.message }, { status: 500 });
+        return NextResponse.json({ error: 'Sürücü eklenirken hata oluştu', message: error.message, code: error.code }, { status: 500 });
     }
 }
 

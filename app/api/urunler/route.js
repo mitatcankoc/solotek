@@ -62,7 +62,21 @@ export async function GET(request) {
 
         const [rows] = await pool.query(query, params);
 
-        return NextResponse.json(rows);
+        // Admin panel uyumluluğu için alias ekle
+        const result = rows.map(row => ({
+            ...row,
+            name: row.ad,
+            short_description: row.kisa_aciklama,
+            description: row.aciklama,
+            image: row.resim,
+            gallery: row.galeri,
+            documents: row.dokumanlar,
+            accessories: row.aksesuarlar,
+            status: row.aktif ? 'Aktif' : 'Pasif',
+            featured: row.one_cikan === 1
+        }));
+
+        return NextResponse.json(result);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -77,12 +91,20 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const {
-            ad, slug, kategori_id, marka_id, kisa_aciklama, aciklama, model,
-            resim, galeri, ozellikler, dokumanlar, aksesuarlar, video_url,
-            fiyat, indirimli_fiyat, stok, aktif, one_cikan, yeni, sira,
-            meta_title, meta_description, meta_keywords
-        } = data;
+
+        // Admin panel ve database uyumluluğu
+        const ad = data.ad || data.name;
+        const slug = data.slug;
+        const kategori_id = data.kategori_id;
+        const marka_id = data.marka_id;
+        const kisa_aciklama = data.kisa_aciklama || data.short_description;
+        const aciklama = data.aciklama || data.description;
+        const resim = data.resim || data.image;
+        const galeri = data.galeri || data.gallery;
+        const dokumanlar = data.dokumanlar || data.documents;
+        const aksesuarlar = data.aksesuarlar || data.accessories;
+        const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
+        const one_cikan = data.featured || data.one_cikan ? 1 : 0;
 
         // Slug otomatik oluştur
         const finalSlug = slug || ad.toLowerCase()
@@ -91,21 +113,16 @@ export async function POST(request) {
             .replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
         const [result] = await pool.query(
-            `INSERT INTO urunler (ad, slug, kategori_id, marka_id, kisa_aciklama, aciklama, model,
-             resim, galeri, ozellikler, dokumanlar, aksesuarlar, video_url,
-             fiyat, indirimli_fiyat, stok, aktif, one_cikan, yeni, sira, 
-             meta_title, meta_description, meta_keywords) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO urunler (ad, slug, kategori_id, marka_id, kisa_aciklama, aciklama,
+             resim, galeri, dokumanlar, aksesuarlar, aktif, one_cikan) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                ad, finalSlug, kategori_id, marka_id, kisa_aciklama, aciklama, model,
+                ad, finalSlug, kategori_id, marka_id, kisa_aciklama, aciklama,
                 resim,
                 galeri ? JSON.stringify(galeri) : null,
-                ozellikler ? JSON.stringify(ozellikler) : null,
                 dokumanlar ? JSON.stringify(dokumanlar) : null,
                 aksesuarlar ? JSON.stringify(aksesuarlar) : null,
-                video_url,
-                fiyat, indirimli_fiyat, stok || 0, aktif ?? 1, one_cikan ?? 0, yeni ?? 0, sira || 0,
-                meta_title, meta_description, meta_keywords
+                aktif, one_cikan
             ]
         );
 
