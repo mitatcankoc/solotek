@@ -20,7 +20,13 @@ export async function GET(request, context) {
         // Görüntülenme sayısını artır
         await pool.query('UPDATE blogs SET views = views + 1 WHERE id = ?', [rows[0].id]);
 
-        return NextResponse.json(rows[0]);
+        // Admin panel uyumluluğu için alias ekle
+        const blog = {
+            ...rows[0],
+            status: rows[0].is_published ? 'Yayında' : 'Taslak'
+        };
+
+        return NextResponse.json(blog);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -36,7 +42,7 @@ export async function PUT(request, context) {
     try {
         const { slug } = await context.params;
         const data = await request.json();
-        const { title, excerpt, content, category, image, author, is_published, is_featured, meta_title, meta_description } = data;
+        const { title, excerpt, content, category, image, author, status, is_published, is_featured, meta_title, meta_description } = data;
 
         // Önce slug ile bul
         let [blog] = await pool.query('SELECT id FROM blogs WHERE slug = ?', [slug]);
@@ -48,9 +54,15 @@ export async function PUT(request, context) {
             return NextResponse.json({ error: 'Blog bulunamadı' }, { status: 404 });
         }
 
+        // Admin panel status -> is_published dönüşümü
+        let isPublished = is_published;
+        if (status !== undefined) {
+            isPublished = status === 'Yayında' ? 1 : 0;
+        }
+
         await pool.query(
             'UPDATE blogs SET title=?, excerpt=?, content=?, category=?, image=?, author=?, is_published=?, is_featured=?, meta_title=?, meta_description=? WHERE id=?',
-            [title, excerpt, content, category, image, author, is_published ?? 1, is_featured ?? 0, meta_title, meta_description, blog[0].id]
+            [title, excerpt, content, category, image, author, isPublished ?? 1, is_featured ?? 0, meta_title, meta_description, blog[0].id]
         );
 
         return NextResponse.json({ message: 'Blog başarıyla güncellendi' });

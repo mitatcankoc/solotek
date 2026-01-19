@@ -13,7 +13,7 @@ export default function AdminBlog() {
 
     const fetchBlogs = async () => {
         try {
-            const res = await fetch('/api/blogs')
+            const res = await fetch('/api/blogs?all=1')
             if (!res.ok) throw new Error('Veri çekilemedi')
             const data = await res.json()
             setBlogs(data)

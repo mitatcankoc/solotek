@@ -24,10 +24,27 @@ function createSlug(text) {
 }
 
 // GET - Tüm blogları getir
-export async function GET() {
+export async function GET(request) {
     try {
-        const [rows] = await pool.query('SELECT * FROM blogs WHERE is_published = 1 ORDER BY published_at DESC');
-        return NextResponse.json(rows);
+        const { searchParams } = new URL(request.url);
+        const all = searchParams.get('all');
+
+        // Admin paneli için tüm blogları getir, yoksa sadece yayındakileri
+        let query = 'SELECT * FROM blogs';
+        if (!all) {
+            query += ' WHERE is_published = 1';
+        }
+        query += ' ORDER BY created_at DESC';
+
+        const [rows] = await pool.query(query);
+
+        // Admin panel uyumluluğu için alias ekle
+        const result = rows.map(row => ({
+            ...row,
+            status: row.is_published ? 'Yayında' : 'Taslak'
+        }));
+
+        return NextResponse.json(result);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -42,13 +59,19 @@ export async function GET() {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { title, excerpt, content, category, image, author, is_published, is_featured } = data;
+        const { title, excerpt, content, category, image, author, status, is_published, is_featured } = data;
 
         const slug = createSlug(title);
 
+        // Admin panel status -> is_published dönüşümü
+        let isPublished = is_published;
+        if (status !== undefined) {
+            isPublished = status === 'Yayında' ? 1 : 0;
+        }
+
         const [result] = await pool.query(
             'INSERT INTO blogs (title, slug, excerpt, content, category, image, author, is_published, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [title, slug, excerpt, content, category, image, author || 'Admin', is_published ?? 1, is_featured ?? 0]
+            [title, slug, excerpt || '', content, category, image, author || 'Admin', isPublished ?? 1, is_featured ?? 0]
         );
 
         return NextResponse.json({
