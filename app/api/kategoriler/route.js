@@ -5,19 +5,22 @@ import pool from '@/lib/db';
 export async function GET() {
     try {
         const [rows] = await pool.query(`
-            SELECT uk.*, 
-                   COUNT(DISTINCT km.marka_id) as marka_sayisi,
+            SELECT k.*, 
                    COUNT(DISTINCT u.id) as urun_sayisi
-            FROM urun_kategorileri uk
-            LEFT JOIN kategori_marka km ON uk.id = km.kategori_id
-            LEFT JOIN urunler u ON uk.id = u.kategori_id
-            GROUP BY uk.id
-            ORDER BY uk.sort_order ASC, uk.name ASC
+            FROM kategoriler k
+            LEFT JOIN urunler u ON k.id = u.kategori_id
+            WHERE k.aktif = 1
+            GROUP BY k.id
+            ORDER BY k.sira ASC, k.ad ASC
         `);
         return NextResponse.json(rows);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
@@ -25,17 +28,17 @@ export async function GET() {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { name, slug, icon, image, description, status, sort_order } = data;
+        const { ad, slug, icon, resim, aciklama, aktif, sira } = data;
 
         // Slug otomatik oluştur
-        const finalSlug = slug || name.toLowerCase()
+        const finalSlug = slug || ad.toLowerCase()
             .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
             .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
             .replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
         const [result] = await pool.query(
-            'INSERT INTO urun_kategorileri (name, slug, icon, image, description, status, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [name, finalSlug, icon || 'fa-box', image, description, status || 'Aktif', sort_order || 0]
+            'INSERT INTO kategoriler (ad, slug, icon, resim, aciklama, aktif, sira) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [ad, finalSlug, icon || 'fa-box', resim, aciklama, aktif ?? 1, sira || 0]
         );
 
         return NextResponse.json({
@@ -67,11 +70,8 @@ export async function DELETE(request) {
             return NextResponse.json({ error: 'Bu kategoride ürünler var, önce ürünleri silin' }, { status: 400 });
         }
 
-        // Kategori-marka ilişkilerini sil
-        await pool.query('DELETE FROM kategori_marka WHERE kategori_id = ?', [id]);
-
         // Kategoriyi sil
-        await pool.query('DELETE FROM urun_kategorileri WHERE id = ?', [id]);
+        await pool.query('DELETE FROM kategoriler WHERE id = ?', [id]);
 
         return NextResponse.json({ message: 'Kategori başarıyla silindi' });
     } catch (error) {
