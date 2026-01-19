@@ -5,7 +5,20 @@ import pool from '@/lib/db';
 export async function GET() {
     try {
         const [rows] = await pool.query('SELECT * FROM iletisim ORDER BY created_at DESC');
-        return NextResponse.json(rows);
+
+        // Veritabanı kolonlarını frontend isimleriyle map et
+        const mappedRows = rows.map(row => ({
+            id: row.id,
+            name: row.ad_soyad,
+            email: row.email,
+            phone: row.telefon,
+            subject: row.konu,
+            message: row.mesaj,
+            status: row.durum || 'Yeni',
+            created_at: row.created_at
+        }));
+
+        return NextResponse.json(mappedRows);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -64,12 +77,15 @@ export async function DELETE(request) {
 export async function PUT(request) {
     try {
         const data = await request.json();
-        const { id, durum, okundu } = data;
+        const { id, status, durum, okundu } = data;
+
+        // Frontend 'status' gönderiyor, veritabanda 'durum' olarak kaydedilmeli
+        const newDurum = status || durum;
 
         if (okundu !== undefined) {
-            await pool.query('UPDATE iletisim SET okundu = ?, durum = ? WHERE id = ?', [okundu ? 1 : 0, durum || 'okundu', id]);
+            await pool.query('UPDATE iletisim SET okundu = ?, durum = ? WHERE id = ?', [okundu ? 1 : 0, newDurum || 'Okundu', id]);
         } else {
-            await pool.query('UPDATE iletisim SET durum = ? WHERE id = ?', [durum, id]);
+            await pool.query('UPDATE iletisim SET durum = ? WHERE id = ?', [newDurum, id]);
         }
         return NextResponse.json({ message: 'Durum güncellendi' });
     } catch (error) {

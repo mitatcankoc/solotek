@@ -5,7 +5,24 @@ import pool from '@/lib/db';
 export async function GET() {
     try {
         const [rows] = await pool.query('SELECT * FROM demo_talep ORDER BY created_at DESC');
-        return NextResponse.json(rows);
+
+        // Veritabanı kolonlarını frontend isimleriyle map et
+        const mappedRows = rows.map(row => ({
+            id: row.id,
+            name: row.ad_soyad,
+            email: row.email,
+            phone: row.telefon,
+            company: row.firma,
+            sector: row.sektor,
+            product: row.urun_ilgi,
+            message: row.mesaj,
+            demo_type: row.demo_turu,
+            status: row.durum || 'Yeni',
+            notes: row.notlar,
+            created_at: row.created_at
+        }));
+
+        return NextResponse.json(mappedRows);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -65,12 +82,16 @@ export async function DELETE(request) {
 export async function PUT(request) {
     try {
         const data = await request.json();
-        const { id, durum, notlar } = data;
+        const { id, status, durum, notlar, notes } = data;
 
-        if (notlar) {
-            await pool.query('UPDATE demo_talep SET durum = ?, notlar = ? WHERE id = ?', [durum, notlar, id]);
+        // Frontend 'status' gönderiyor, veritabanda 'durum' olarak kaydedilmeli
+        const newDurum = status || durum;
+        const newNotlar = notes || notlar;
+
+        if (newNotlar) {
+            await pool.query('UPDATE demo_talep SET durum = ?, notlar = ? WHERE id = ?', [newDurum, newNotlar, id]);
         } else {
-            await pool.query('UPDATE demo_talep SET durum = ? WHERE id = ?', [durum, id]);
+            await pool.query('UPDATE demo_talep SET durum = ? WHERE id = ?', [newDurum, id]);
         }
         return NextResponse.json({ message: 'Durum güncellendi' });
     } catch (error) {
