@@ -20,7 +20,13 @@ export async function GET() {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { ad_soyad, email, telefon, konu, mesaj } = data;
+
+        // Frontend ve database uyumluluğu
+        const ad_soyad = data.ad_soyad || data.name;
+        const email = data.email;
+        const telefon = data.telefon || data.phone;
+        const konu = data.konu || data.subject;
+        const mesaj = data.mesaj || data.message;
 
         // IP adresini al
         const ip_adresi = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || null;
