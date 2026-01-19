@@ -32,25 +32,18 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { name, slug, logo, description, website, status, sort_order, kategoriler } = data;
+        const { ad, slug, logo, aciklama, website, aktif, sira } = data;
 
         // Slug otomatik oluştur
-        const finalSlug = slug || name.toLowerCase()
+        const finalSlug = slug || ad.toLowerCase()
             .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
             .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
             .replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
         const [result] = await pool.query(
-            'INSERT INTO markalar (name, slug, logo, description, website, status, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [name, finalSlug, logo, description, website, status || 'Aktif', sort_order || 0]
+            'INSERT INTO markalar (ad, slug, logo, aciklama, website, aktif, sira) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [ad, finalSlug, logo, aciklama, website, aktif ?? 1, sira || 0]
         );
-
-        // Eğer kategoriler gönderildiyse, ilişkileri ekle
-        if (kategoriler && Array.isArray(kategoriler)) {
-            for (const kategoriId of kategoriler) {
-                await pool.query('INSERT INTO kategori_marka (kategori_id, marka_id) VALUES (?, ?)', [kategoriId, result.insertId]);
-            }
-        }
 
         return NextResponse.json({
             message: 'Marka başarıyla eklendi',
@@ -61,7 +54,7 @@ export async function POST(request) {
         if (error.code === 'ER_DUP_ENTRY') {
             return NextResponse.json({ error: 'Bu slug zaten kullanılıyor' }, { status: 400 });
         }
-        return NextResponse.json({ error: 'Marka eklenirken hata oluştu' }, { status: 500 });
+        return NextResponse.json({ error: 'Marka eklenirken hata oluştu', message: error.message, code: error.code }, { status: 500 });
     }
 }
 

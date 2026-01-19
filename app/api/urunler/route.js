@@ -78,31 +78,34 @@ export async function POST(request) {
     try {
         const data = await request.json();
         const {
-            name, slug, kategori_id, marka_id, short_description, description,
-            image, gallery, features, specifications, documents, accessories,
-            price, status, featured, sort_order, meta_title, meta_description
+            ad, slug, kategori_id, marka_id, kisa_aciklama, aciklama, model,
+            resim, galeri, ozellikler, dokumanlar, aksesuarlar, video_url,
+            fiyat, indirimli_fiyat, stok, aktif, one_cikan, yeni, sira,
+            meta_title, meta_description, meta_keywords
         } = data;
 
         // Slug otomatik oluştur
-        const finalSlug = slug || name.toLowerCase()
+        const finalSlug = slug || ad.toLowerCase()
             .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
             .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
             .replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
         const [result] = await pool.query(
-            `INSERT INTO urunler (name, slug, kategori_id, marka_id, short_description, description, 
-             image, gallery, features, specifications, documents, accessories, price, status, featured, sort_order, meta_title, meta_description) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO urunler (ad, slug, kategori_id, marka_id, kisa_aciklama, aciklama, model,
+             resim, galeri, ozellikler, dokumanlar, aksesuarlar, video_url,
+             fiyat, indirimli_fiyat, stok, aktif, one_cikan, yeni, sira, 
+             meta_title, meta_description, meta_keywords) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                name, finalSlug, kategori_id, marka_id, short_description, description,
-                image,
-                gallery ? JSON.stringify(gallery) : null,
-                features ? JSON.stringify(features) : null,
-                specifications ? JSON.stringify(specifications) : null,
-                documents ? JSON.stringify(documents) : null,
-                accessories ? JSON.stringify(accessories) : null,
-                price, status || 'Aktif', featured || false, sort_order || 0,
-                meta_title, meta_description
+                ad, finalSlug, kategori_id, marka_id, kisa_aciklama, aciklama, model,
+                resim,
+                galeri ? JSON.stringify(galeri) : null,
+                ozellikler ? JSON.stringify(ozellikler) : null,
+                dokumanlar ? JSON.stringify(dokumanlar) : null,
+                aksesuarlar ? JSON.stringify(aksesuarlar) : null,
+                video_url,
+                fiyat, indirimli_fiyat, stok || 0, aktif ?? 1, one_cikan ?? 0, yeni ?? 0, sira || 0,
+                meta_title, meta_description, meta_keywords
             ]
         );
 
@@ -115,7 +118,7 @@ export async function POST(request) {
         if (error.code === 'ER_DUP_ENTRY') {
             return NextResponse.json({ error: 'Bu slug zaten kullanılıyor' }, { status: 400 });
         }
-        return NextResponse.json({ error: 'Ürün eklenirken hata oluştu' }, { status: 500 });
+        return NextResponse.json({ error: 'Ürün eklenirken hata oluştu', message: error.message, code: error.code }, { status: 500 });
     }
 }
 
