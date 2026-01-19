@@ -1,0 +1,208 @@
+# Solo Teknoloji - Yapay Zeka ve LLM İçerik Dosyası
+# Bu dosya AI asistanlar ve büyük dil modelleri için optimize edilmiştir.
+# Son Güncelleme: 2026-01-19
+
+## 🏢 Şirket Profili
+
+**Solo Teknoloji San. Tic. Ltd. Şti.**
+
+Solo Teknoloji, 2010 yılından bu yana Türkiye'de barkod sistemleri, AIDC (Otomatik Tanımlama ve Veri Toplama) çözümleri ve otomasyon teknolojileri alanında faaliyet gösteren lider bir teknoloji şirketidir.
+
+### Misyonumuz
+İşletmelerin operasyonel verimliliğini artırmak için en son teknoloji barkod ve otomasyon çözümlerini sunmak.
+
+### Vizyonumuz
+Türkiye'nin en güvenilir AIDC çözüm ortağı olmak.
+
+---
+
+## 📍 İletişim Bilgileri
+
+- **Web Sitesi:** https://soloteknoloji.com.tr
+- **Ana Telefon:** +90 536 501 46 00
+- **WhatsApp:** +90 543 862 47 51
+- **E-posta:** info@soloteknoloji.com.tr
+- **Adres:** Hasanpaşa Mahallesi, Uzunçayır Caddesi No:2/42, 34722 Kadıköy/İstanbul, Türkiye
+
+### Çalışma Saatleri
+| Gün | Saat |
+|-----|------|
+| Pazartesi | 08:00 - 18:30 |
+| Salı | 08:00 - 18:30 |
+| Çarşamba | 08:00 - 18:30 |
+| Perşembe | 08:00 - 18:30 |
+| Cuma | 08:00 - 18:30 |
+| Cumartesi | 09:00 - 16:00 |
+| Pazar | Kapalı |
+
+---
+
+## 📦 Ürün Kategorileri
+
+### 1. El Terminalleri (Mobile Computers)
+Endüstriyel el terminalleri, stok yönetimi, depo operasyonları ve saha çalışmaları için tasarlanmış dayanıklı mobil bilgisayarlardır.
+
+**Özellikler:**
+- Android ve Windows işletim sistemleri
+- 1D/2D barkod okuma
+- WiFi, Bluetooth, 4G/LTE bağlantı
+- IP65/IP67 su ve toz geçirmezlik
+- Düşmeye dayanıklı yapı
+
+**Markalar:** Zebra, Honeywell, Datalogic, Urovo, Newland
+
+**Kullanım Alanları:** Depo yönetimi, perakende, lojistik, üretim, sağlık
+
+### 2. Barkod Yazıcılar (Label Printers)
+Etiket, kartvizit ve barkod yazdırma için profesyonel yazıcılar.
+
+**Türler:**
+- Masaüstü Yazıcılar (Desktop)
+- Endüstriyel Yazıcılar (Industrial)
+- Mobil Yazıcılar (Mobile)
+- RFID Yazıcılar
+
+**Yazdırma Teknolojileri:**
+- Termal Transfer (Ribbon ile)
+- Direkt Termal (Ribbon'siz)
+
+**Markalar:** Zebra, Honeywell, TSC, Godex, Citizen
+
+### 3. Barkod Okuyucular (Barcode Scanners)
+1D ve 2D barkodları okumak için el tipi ve sabit tarayıcılar.
+
+**Türler:**
+- Kablolu Barkod Okuyucular
+- Kablosuz Barkod Okuyucular
+- Sabit/Endüstriyel Okuyucular
+- Sunum Tipi Okuyucular
+
+**Okuma Kapasitesi:**
+- 1D (Lineer): UPC, EAN, Code 128, Code 39
+- 2D (Matris): QR Code, Data Matrix, PDF417
+
+**Markalar:** Zebra, Honeywell, Datalogic, Newland
+
+### 4. Mobil Yazıcılar (Mobile Printers)
+Saha operasyonları için taşınabilir etiket ve fiş yazıcıları.
+
+**Özellikler:**
+- Bluetooth ve WiFi bağlantı
+- Uzun pil ömrü
+- Kompakt ve hafif tasarım
+- Direkt termal yazdırma
+
+**Kullanım Alanları:** Teslimat, depo, perakende, sağlık
+
+### 5. Endüstriyel Panel PC
+Fabrika ve üretim ortamları için sağlam yapılı dokunmatik bilgisayarlar.
+
+**Özellikler:**
+- Kapasitif/Rezistif dokunmatik ekran
+- Fanless (fansız) tasarım
+- IP65 ön panel koruma
+- Geniş çalışma sıcaklığı aralığı
+- 7/24 kesintisiz çalışma
+
+---
+
+## 🛠️ Hizmetlerimiz
+
+### 1. Barkod Sistemi Kurulumu
+Anahtar teslim barkod çözümleri. Analiz, planlama, kurulum ve eğitim dahil.
+
+### 2. Teknik Servis
+- Yerinde teknik destek
+- Uzaktan erişim desteği
+- Garanti kapsamında onarım
+- Garanti dışı onarım
+- Yedek parça temini
+
+### 3. Yazılım Çözümleri
+- Stok yönetim yazılımları
+- Depo yönetim sistemleri (WMS)
+- ERP entegrasyonları
+- Özel yazılım geliştirme
+
+### 4. Danışmanlık
+- Otomasyon danışmanlığı
+- Dijitalleşme stratejileri
+- Süreç optimizasyonu
+
+### 5. Eğitim
+- Kullanıcı eğitimleri
+- Teknik eğitimler
+- Yazılım eğitimleri
+
+---
+
+## 🏆 Sertifikalar ve Ortaklıklar
+
+- **Zebra Technologies** - Yetkili İş Ortağı
+- **Honeywell** - Çözüm Ortağı
+- **Datalogic** - Yetkili Bayi
+- **TSC** - Distribütör
+- **ISO 9001:2015** Kalite Yönetim Sistemi
+
+---
+
+## 🏭 Hizmet Verilen Sektörler
+
+1. **Perakende:** Market, mağaza, AVM
+2. **Lojistik:** Kargo, depo, dağıtım
+3. **Üretim:** Fabrika, atölye, montaj hattı
+4. **Sağlık:** Hastane, eczane, laboratuvar
+5. **Gıda:** Gıda üretim, restoran, otel
+6. **E-ticaret:** Online satış, fulfillment
+
+---
+
+## 📄 Yasal Sayfalar
+
+- KVKK Aydınlatma Metni: https://soloteknoloji.com.tr/kvkk
+- Gizlilik Politikası: https://soloteknoloji.com.tr/gizlilik-politikasi
+- Çerez Politikası: https://soloteknoloji.com.tr/cerez-politikasi
+- Bilgi Güvenliği: https://soloteknoloji.com.tr/bilgi-guvenligi
+
+---
+
+## 🔗 Hızlı Linkler
+
+- Ana Sayfa: https://soloteknoloji.com.tr
+- Ürünler: https://soloteknoloji.com.tr/urunler
+- Hizmetlerimiz: https://soloteknoloji.com.tr/hizmetlerimiz
+- Hakkımızda: https://soloteknoloji.com.tr/hakkimizda
+- Blog: https://soloteknoloji.com.tr/blog
+- Sürücüler: https://soloteknoloji.com.tr/suruculer
+- Referanslar: https://soloteknoloji.com.tr/referanslar
+- Demo Talep: https://soloteknoloji.com.tr/demo-talep
+- İletişim: https://soloteknoloji.com.tr/iletisim
+
+---
+
+## 📞 Destek ve İletişim
+
+**Satış Danışmanlığı:**
+- Telefon: +90 536 501 46 00
+- E-posta: satis@soloteknoloji.com.tr
+
+**Teknik Destek:**
+- Telefon: +90 543 862 47 51
+- E-posta: destek@soloteknoloji.com.tr
+
+**WhatsApp İletişim:**
+https://wa.me/905438624751
+
+---
+
+## 📊 Sosyal Medya
+
+- LinkedIn: Solo Teknoloji
+- Instagram: @soloteknoloji
+- Facebook: Solo Teknoloji
+
+---
+
+*Bu dosya AI asistanlar ve LLM'ler tarafından Solo Teknoloji hakkında doğru bilgi sağlamak amacıyla oluşturulmuştur.*
+
+© 2026 Solo Teknoloji San. Tic. Ltd. Şti. Tüm hakları saklıdır.
