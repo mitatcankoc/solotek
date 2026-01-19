@@ -10,12 +10,10 @@ function createSlug(text) {
 
     let slug = text.toLowerCase();
 
-    // Türkçe karakterleri değiştir
     for (const [tr, en] of Object.entries(turkishMap)) {
         slug = slug.replace(new RegExp(tr, 'g'), en.toLowerCase());
     }
 
-    // Özel karakterleri kaldır, boşlukları tire yap
     slug = slug
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
@@ -28,11 +26,15 @@ function createSlug(text) {
 // GET - Tüm blogları getir
 export async function GET() {
     try {
-        const [rows] = await pool.query('SELECT * FROM blogs ORDER BY created_at DESC');
+        const [rows] = await pool.query('SELECT * FROM blogs WHERE is_published = 1 ORDER BY published_at DESC');
         return NextResponse.json(rows);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
@@ -40,14 +42,13 @@ export async function GET() {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { title, content, category, image, status } = data;
+        const { title, excerpt, content, category, image, author, is_published, is_featured } = data;
 
-        // Başlıktan slug oluştur
         const slug = createSlug(title);
 
         const [result] = await pool.query(
-            'INSERT INTO blogs (title, slug, content, category, image, status) VALUES (?, ?, ?, ?, ?, ?)',
-            [title, slug, content, category, image, status || 'Taslak']
+            'INSERT INTO blogs (title, slug, excerpt, content, category, image, author, is_published, is_featured) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [title, slug, excerpt, content, category, image, author || 'Admin', is_published ?? 1, is_featured ?? 0]
         );
 
         return NextResponse.json({
@@ -57,7 +58,7 @@ export async function POST(request) {
         }, { status: 201 });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Blog eklenirken hata oluştu' }, { status: 500 });
+        return NextResponse.json({ error: 'Blog eklenirken hata oluştu', message: error.message }, { status: 500 });
     }
 }
 

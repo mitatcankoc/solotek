@@ -8,7 +8,11 @@ export async function GET() {
         return NextResponse.json(rows);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
@@ -16,11 +20,14 @@ export async function GET() {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { name, email, phone, subject, message } = data;
+        const { ad_soyad, email, telefon, konu, mesaj } = data;
+
+        // IP adresini al
+        const ip_adresi = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || null;
 
         const [result] = await pool.query(
-            'INSERT INTO iletisim (name, email, phone, subject, message) VALUES (?, ?, ?, ?, ?)',
-            [name, email, phone || null, subject || null, message]
+            'INSERT INTO iletisim (ad_soyad, email, telefon, konu, mesaj, ip_adresi, durum) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [ad_soyad, email, telefon || null, konu || null, mesaj, ip_adresi, 'yeni']
         );
 
         return NextResponse.json({
@@ -29,7 +36,7 @@ export async function POST(request) {
         }, { status: 201 });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Mesaj gönderilemedi' }, { status: 500 });
+        return NextResponse.json({ error: 'Mesaj gönderilemedi', message: error.message }, { status: 500 });
     }
 }
 
@@ -51,9 +58,13 @@ export async function DELETE(request) {
 export async function PUT(request) {
     try {
         const data = await request.json();
-        const { id, status } = data;
+        const { id, durum, okundu } = data;
 
-        await pool.query('UPDATE iletisim SET status = ? WHERE id = ?', [status, id]);
+        if (okundu !== undefined) {
+            await pool.query('UPDATE iletisim SET okundu = ?, durum = ? WHERE id = ?', [okundu ? 1 : 0, durum || 'okundu', id]);
+        } else {
+            await pool.query('UPDATE iletisim SET durum = ? WHERE id = ?', [durum, id]);
+        }
         return NextResponse.json({ message: 'Durum güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);

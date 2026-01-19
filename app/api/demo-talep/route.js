@@ -8,7 +8,11 @@ export async function GET() {
         return NextResponse.json(rows);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
@@ -16,11 +20,13 @@ export async function GET() {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { name, email, phone, company, message, product, demo_type } = data;
+        const { ad_soyad, email, telefon, firma, sektor, urun_ilgi, mesaj } = data;
+
+        const ip_adresi = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || null;
 
         const [result] = await pool.query(
-            'INSERT INTO demo_talep (name, email, phone, company, message, product, demo_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [name, email, phone || null, company || null, message || null, product || null, demo_type || null]
+            'INSERT INTO demo_talep (ad_soyad, email, telefon, firma, sektor, urun_ilgi, mesaj, durum, ip_adresi) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [ad_soyad, email, telefon, firma || null, sektor || null, urun_ilgi || null, mesaj || null, 'beklemede', ip_adresi]
         );
 
         return NextResponse.json({
@@ -29,7 +35,7 @@ export async function POST(request) {
         }, { status: 201 });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Demo talebi gönderilemedi' }, { status: 500 });
+        return NextResponse.json({ error: 'Demo talebi gönderilemedi', message: error.message }, { status: 500 });
     }
 }
 
@@ -51,9 +57,13 @@ export async function DELETE(request) {
 export async function PUT(request) {
     try {
         const data = await request.json();
-        const { id, status } = data;
+        const { id, durum, notlar } = data;
 
-        await pool.query('UPDATE demo_talep SET status = ? WHERE id = ?', [status, id]);
+        if (notlar) {
+            await pool.query('UPDATE demo_talep SET durum = ?, notlar = ? WHERE id = ?', [durum, notlar, id]);
+        } else {
+            await pool.query('UPDATE demo_talep SET durum = ? WHERE id = ?', [durum, id]);
+        }
         return NextResponse.json({ message: 'Durum güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);

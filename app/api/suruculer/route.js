@@ -6,28 +6,32 @@ export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const search = searchParams.get('search');
-        const status = searchParams.get('status');
+        const marka = searchParams.get('marka');
 
-        let query = 'SELECT * FROM suruculer WHERE 1=1';
+        let query = 'SELECT * FROM suruculer WHERE aktif = 1';
         const params = [];
 
         if (search) {
-            query += ' AND (urun_adi LIKE ? OR surucu_adi LIKE ?)';
-            params.push(`%${search}%`, `%${search}%`);
+            query += ' AND (baslik LIKE ? OR aciklama LIKE ? OR model LIKE ?)';
+            params.push(`%${search}%`, `%${search}%`, `%${search}%`);
         }
 
-        if (status) {
-            query += ' AND status = ?';
-            params.push(status);
+        if (marka) {
+            query += ' AND marka = ?';
+            params.push(marka);
         }
 
-        query += ' ORDER BY urun_adi ASC, created_at DESC';
+        query += ' ORDER BY baslik ASC, created_at DESC';
 
         const [rows] = await pool.query(query, params);
         return NextResponse.json(rows);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
@@ -35,12 +39,12 @@ export async function GET(request) {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { urun_adi, surucu_adi, dosya_url, dosya_boyutu, versiyon, isletim_sistemi, aciklama, status } = data;
+        const { baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi } = data;
 
         const [result] = await pool.query(
-            `INSERT INTO suruculer (urun_adi, surucu_adi, dosya_url, dosya_boyutu, versiyon, isletim_sistemi, aciklama, status) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [urun_adi, surucu_adi, dosya_url, dosya_boyutu || null, versiyon || null, isletim_sistemi || null, aciklama || null, status || 'Aktif']
+            `INSERT INTO suruculer (baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi, aktif) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+            [baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi]
         );
 
         return NextResponse.json({
@@ -49,6 +53,24 @@ export async function POST(request) {
         }, { status: 201 });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Sürücü eklenirken hata oluştu' }, { status: 500 });
+        return NextResponse.json({ error: 'Sürücü eklenirken hata oluştu', message: error.message }, { status: 500 });
+    }
+}
+
+// DELETE - Sürücü sil
+export async function DELETE(request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json({ error: 'ID gerekli' }, { status: 400 });
+        }
+
+        await pool.query('DELETE FROM suruculer WHERE id = ?', [id]);
+        return NextResponse.json({ message: 'Sürücü başarıyla silindi' });
+    } catch (error) {
+        console.error('Veritabanı hatası:', error);
+        return NextResponse.json({ error: 'Sürücü silinirken hata oluştu' }, { status: 500 });
     }
 }
