@@ -8,7 +8,7 @@ export async function POST(request) {
 
         // Veritabanından kullanıcıyı kontrol et
         const [rows] = await pool.query(
-            'SELECT * FROM admin_users WHERE email = ? AND password = ? AND status = "Aktif"',
+            'SELECT * FROM admin_users WHERE email = ? AND password = ?',
             [email, password]
         );
 
@@ -40,7 +40,9 @@ export async function POST(request) {
         console.error('Giriş hatası:', error);
         return NextResponse.json({
             success: false,
-            error: 'Sunucu hatası'
+            error: 'Sunucu hatası',
+            message: error.message,
+            code: error.code
         }, { status: 500 });
     }
 }
