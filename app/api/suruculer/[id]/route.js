@@ -14,7 +14,11 @@ export async function GET(request, { params }) {
         return NextResponse.json(rows[0]);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
@@ -23,20 +27,20 @@ export async function PUT(request, { params }) {
     try {
         const { id } = await params;
         const data = await request.json();
-        const { urun_adi, surucu_adi, dosya_url, dosya_boyutu, versiyon, isletim_sistemi, aciklama, status } = data;
+        const { baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi, aktif } = data;
 
         await pool.query(
             `UPDATE suruculer SET 
-                urun_adi = ?, surucu_adi = ?, dosya_url = ?, dosya_boyutu = ?, 
-                versiyon = ?, isletim_sistemi = ?, aciklama = ?, status = ?
+                baslik = ?, slug = ?, aciklama = ?, kategori = ?, marka = ?, model = ?,
+                versiyon = ?, isletim_sistemi = ?, dosya_url = ?, dosya_boyutu = ?, dosya_tipi = ?, aktif = ?
              WHERE id = ?`,
-            [urun_adi, surucu_adi, dosya_url, dosya_boyutu, versiyon, isletim_sistemi, aciklama, status, id]
+            [baslik, slug, aciklama, kategori, marka, model, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, dosya_tipi, aktif ?? 1, id]
         );
 
         return NextResponse.json({ message: 'Sürücü güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Güncelleme başarısız' }, { status: 500 });
+        return NextResponse.json({ error: 'Güncelleme başarısız', message: error.message }, { status: 500 });
     }
 }
 

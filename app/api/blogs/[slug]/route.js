@@ -10,7 +10,6 @@ export async function GET(request, context) {
         let [rows] = await pool.query('SELECT * FROM blogs WHERE slug = ?', [slug]);
 
         if (rows.length === 0) {
-            // Belki ID ile aranıyordur
             [rows] = await pool.query('SELECT * FROM blogs WHERE id = ?', [slug]);
         }
 
@@ -18,10 +17,17 @@ export async function GET(request, context) {
             return NextResponse.json({ error: 'Blog bulunamadı' }, { status: 404 });
         }
 
+        // Görüntülenme sayısını artır
+        await pool.query('UPDATE blogs SET views = views + 1 WHERE id = ?', [rows[0].id]);
+
         return NextResponse.json(rows[0]);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
@@ -30,7 +36,7 @@ export async function PUT(request, context) {
     try {
         const { slug } = await context.params;
         const data = await request.json();
-        const { title, content, category, image, status } = data;
+        const { title, excerpt, content, category, image, author, is_published, is_featured, meta_title, meta_description } = data;
 
         // Önce slug ile bul
         let [blog] = await pool.query('SELECT id FROM blogs WHERE slug = ?', [slug]);
@@ -43,14 +49,14 @@ export async function PUT(request, context) {
         }
 
         await pool.query(
-            'UPDATE blogs SET title=?, content=?, category=?, image=?, status=? WHERE id=?',
-            [title, content, category, image, status, blog[0].id]
+            'UPDATE blogs SET title=?, excerpt=?, content=?, category=?, image=?, author=?, is_published=?, is_featured=?, meta_title=?, meta_description=? WHERE id=?',
+            [title, excerpt, content, category, image, author, is_published ?? 1, is_featured ?? 0, meta_title, meta_description, blog[0].id]
         );
 
         return NextResponse.json({ message: 'Blog başarıyla güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Blog güncellenirken hata oluştu' }, { status: 500 });
+        return NextResponse.json({ error: 'Blog güncellenirken hata oluştu', message: error.message }, { status: 500 });
     }
 }
 
@@ -59,7 +65,6 @@ export async function DELETE(request, context) {
     try {
         const { slug } = await context.params;
 
-        // Önce slug ile bul
         let [blog] = await pool.query('SELECT id FROM blogs WHERE slug = ?', [slug]);
         if (blog.length === 0) {
             [blog] = await pool.query('SELECT id FROM blogs WHERE id = ?', [slug]);

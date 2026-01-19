@@ -7,28 +7,32 @@ export async function GET(request, context) {
         const { id } = await context.params;
 
         // Önce slug ile ara, bulamazsan id ile ara
-        let [rows] = await pool.query('SELECT * FROM urun_kategorileri WHERE slug = ?', [id]);
+        let [rows] = await pool.query('SELECT * FROM kategoriler WHERE slug = ?', [id]);
 
         if (rows.length === 0) {
-            [rows] = await pool.query('SELECT * FROM urun_kategorileri WHERE id = ?', [id]);
+            [rows] = await pool.query('SELECT * FROM kategoriler WHERE id = ?', [id]);
         }
 
         if (rows.length === 0) {
             return NextResponse.json({ error: 'Kategori bulunamadı' }, { status: 404 });
         }
 
-        // Bu kategorideki markaları da getir
+        // Bu kategorideki markaları da getir (ürünler üzerinden)
         const [markalar] = await pool.query(`
-            SELECT m.* FROM markalar m
-            INNER JOIN kategori_marka km ON m.id = km.marka_id
-            WHERE km.kategori_id = ?
-            ORDER BY m.sort_order ASC, m.name ASC
+            SELECT DISTINCT m.* FROM markalar m
+            INNER JOIN urunler u ON m.id = u.marka_id
+            WHERE u.kategori_id = ? AND m.aktif = 1
+            ORDER BY m.sira ASC, m.ad ASC
         `, [rows[0].id]);
 
         return NextResponse.json({ ...rows[0], markalar });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
@@ -37,29 +41,17 @@ export async function PUT(request, context) {
     try {
         const { id } = await context.params;
         const data = await request.json();
-        const { name, slug, icon, image, description, status, sort_order, markalar } = data;
+        const { ad, slug, icon, resim, aciklama, aktif, sira } = data;
 
-        // Kategoriyi güncelle
         await pool.query(
-            'UPDATE urun_kategorileri SET name=?, slug=?, icon=?, image=?, description=?, status=?, sort_order=? WHERE id=?',
-            [name, slug, icon, image, description, status, sort_order, id]
+            'UPDATE kategoriler SET ad=?, slug=?, icon=?, resim=?, aciklama=?, aktif=?, sira=? WHERE id=?',
+            [ad, slug, icon, resim, aciklama, aktif ?? 1, sira ?? 0, id]
         );
-
-        // Eğer markalar gönderildiyse, ilişkileri güncelle
-        if (markalar && Array.isArray(markalar)) {
-            // Mevcut ilişkileri sil
-            await pool.query('DELETE FROM kategori_marka WHERE kategori_id = ?', [id]);
-
-            // Yeni ilişkileri ekle
-            for (const markaId of markalar) {
-                await pool.query('INSERT INTO kategori_marka (kategori_id, marka_id) VALUES (?, ?)', [id, markaId]);
-            }
-        }
 
         return NextResponse.json({ message: 'Kategori başarıyla güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Kategori güncellenirken hata oluştu' }, { status: 500 });
+        return NextResponse.json({ error: 'Kategori güncellenirken hata oluştu', message: error.message }, { status: 500 });
     }
 }
 
@@ -74,11 +66,8 @@ export async function DELETE(request, context) {
             return NextResponse.json({ error: 'Bu kategoride ürünler var, önce ürünleri silin' }, { status: 400 });
         }
 
-        // Kategori-marka ilişkilerini sil
-        await pool.query('DELETE FROM kategori_marka WHERE kategori_id = ?', [id]);
-
         // Kategoriyi sil
-        await pool.query('DELETE FROM urun_kategorileri WHERE id = ?', [id]);
+        await pool.query('DELETE FROM kategoriler WHERE id = ?', [id]);
 
         return NextResponse.json({ message: 'Kategori başarıyla silindi' });
     } catch (error) {

@@ -15,7 +15,11 @@ export async function GET(request, context) {
         return NextResponse.json(rows[0]);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Veritabanı hatası' }, { status: 500 });
+        return NextResponse.json({
+            error: 'Veritabanı hatası',
+            message: error.message,
+            code: error.code
+        }, { status: 500 });
     }
 }
 
@@ -24,7 +28,7 @@ export async function PUT(request, context) {
     try {
         const { id } = await context.params;
         const data = await request.json();
-        const { name, description, logo, website } = data;
+        const { firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan, aktif, sira } = data;
 
         const [referans] = await pool.query('SELECT id FROM referanslar WHERE id = ?', [id]);
 
@@ -33,14 +37,14 @@ export async function PUT(request, context) {
         }
 
         await pool.query(
-            'UPDATE referanslar SET name=?, description=?, logo=?, website=? WHERE id=?',
-            [name, description, logo, website, id]
+            'UPDATE referanslar SET firma_adi=?, slug=?, logo=?, logo_url=?, aciklama=?, sektor=?, website=?, one_cikan=?, aktif=?, sira=? WHERE id=?',
+            [firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan ?? 0, aktif ?? 1, sira ?? 0, id]
         );
 
         return NextResponse.json({ message: 'Referans başarıyla güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
-        return NextResponse.json({ error: 'Referans güncellenirken hata oluştu' }, { status: 500 });
+        return NextResponse.json({ error: 'Referans güncellenirken hata oluştu', message: error.message }, { status: 500 });
     }
 }
 
