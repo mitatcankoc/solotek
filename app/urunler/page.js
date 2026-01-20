@@ -35,10 +35,18 @@ function ProductsContent() {
                 fetch('/api/kategoriler'),
                 fetch('/api/markalar')
             ])
-            if (katRes.ok) setKategoriler(await katRes.json())
-            if (markaRes.ok) setMarkalar(await markaRes.json())
+            if (katRes.ok) {
+                const katData = await katRes.json()
+                setKategoriler(Array.isArray(katData) ? katData : [])
+            }
+            if (markaRes.ok) {
+                const markaData = await markaRes.json()
+                setMarkalar(Array.isArray(markaData) ? markaData : [])
+            }
         } catch (error) {
             console.error('Hata:', error)
+            setKategoriler([])
+            setMarkalar([])
         } finally {
             setLoading(false)
         }
@@ -50,11 +58,15 @@ function ProductsContent() {
             const res = await fetch(`/api/urunler?search=${encodeURIComponent(query)}`)
             if (res.ok) {
                 const data = await res.json()
-                setUrunler(data)
+                setUrunler(Array.isArray(data) ? data : [])
+                setShowResults(true)
+            } else {
+                setUrunler([])
                 setShowResults(true)
             }
         } catch (error) {
             console.error('Arama hatası:', error)
+            setUrunler([])
         } finally {
             setLoading(false)
         }

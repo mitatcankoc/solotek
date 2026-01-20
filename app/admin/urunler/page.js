@@ -24,11 +24,19 @@ export default function AdminUrunler() {
                 fetch('/api/kategoriler'),
                 fetch('/api/markalar')
             ])
-            if (katRes.ok) setKategoriler(await katRes.json())
-            if (markaRes.ok) setMarkalar(await markaRes.json())
+            if (katRes.ok) {
+                const katData = await katRes.json()
+                setKategoriler(Array.isArray(katData) ? katData : [])
+            }
+            if (markaRes.ok) {
+                const markaData = await markaRes.json()
+                setMarkalar(Array.isArray(markaData) ? markaData : [])
+            }
             await fetchUrunler()
         } catch (error) {
             console.error('Hata:', error)
+            setKategoriler([])
+            setMarkalar([])
         }
     }
 
@@ -40,9 +48,15 @@ export default function AdminUrunler() {
             if (selectedMarka) url += `marka=${selectedMarka}&`
 
             const res = await fetch(url)
-            if (res.ok) setUrunler(await res.json())
+            if (res.ok) {
+                const data = await res.json()
+                setUrunler(Array.isArray(data) ? data : [])
+            } else {
+                setUrunler([])
+            }
         } catch (error) {
             console.error('Hata:', error)
+            setUrunler([])
         } finally {
             setLoading(false)
         }
