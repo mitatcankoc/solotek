@@ -23,7 +23,7 @@ export default function UrunEkle() {
         description: '',
         image: '',
         gallery: [],
-        features: [],
+        featuresText: '',
         documents: [],
         accessories: [],
         status: 'Aktif',
@@ -326,9 +326,20 @@ export default function UrunEkle() {
 
         setLoading(true)
         try {
+            // featuresText'i features dizisine dönüştür
+            const features = formData.featuresText ? formData.featuresText.split('\n')
+                .filter(line => line.trim() !== '')
+                .map(line => {
+                    const colonIndex = line.indexOf(':');
+                    if (colonIndex > 0) {
+                        return { label: line.substring(0, colonIndex).trim(), value: line.substring(colonIndex + 1).trim() };
+                    }
+                    return { label: '', value: line.trim() };
+                }) : [];
+
             const submitData = {
                 ...formData,
-                features: formData.features.filter(f => f.label.trim() !== '' || f.value.trim() !== ''),
+                features,
                 documents: formData.documents.filter(d => d.name.trim() !== ''),
                 accessories: formData.accessories.filter(a => a.name.trim() !== '')
             }
@@ -416,24 +427,18 @@ export default function UrunEkle() {
                                 <i className="fa-solid fa-list-check" style={{ color: '#10b981', marginRight: '10px' }}></i>
                                 Teknik Özellikler
                             </h3>
-                            {formData.features.map((feature, index) => (
-                                <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
-                                    <input type="text" value={feature.label} onChange={(e) => updateFeature(index, 'label', e.target.value)}
-                                        style={{ flex: '1 1 150px', padding: '10px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
-                                        placeholder="Özellik adı (Örn: Ekran)" />
-                                    <input type="text" value={feature.value} onChange={(e) => updateFeature(index, 'value', e.target.value)}
-                                        style={{ flex: '2 1 250px', padding: '10px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
-                                        placeholder="Değer (Örn: 6.0 inch FHD)" />
-                                    <button type="button" onClick={() => removeFeature(index)}
-                                        style={{ padding: '10px 15px', background: 'rgba(239, 68, 68, 0.1)', border: 'none', borderRadius: '10px', color: '#ef4444', cursor: 'pointer' }}>
-                                        <i className="fa-solid fa-times"></i>
-                                    </button>
-                                </div>
-                            ))}
-                            <button type="button" onClick={addFeature}
-                                style={{ padding: '10px 20px', background: 'rgba(16, 185, 129, 0.1)', border: 'none', borderRadius: '10px', color: '#10b981', cursor: 'pointer', fontSize: '13px' }}>
-                                <i className="fa-solid fa-plus" style={{ marginRight: '5px' }}></i> Özellik Ekle
-                            </button>
+                            <textarea
+                                name="featuresText"
+                                value={formData.featuresText || ''}
+                                onChange={handleChange}
+                                rows={8}
+                                style={{ width: '100%', padding: '12px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none', resize: 'vertical', lineHeight: '1.6' }}
+                                placeholder="Her satıra bir özellik yazın, örnek:&#10;Ekran: 6.0 inch FHD&#10;İşlemci: Qualcomm 4490&#10;Batarya: 4500 mAh&#10;Koruma: IP65 + IP68"
+                            />
+                            <p style={{ fontSize: '12px', color: '#999', marginTop: '8px' }}>
+                                <i className="fa-solid fa-info-circle" style={{ marginRight: '5px' }}></i>
+                                Her satıra bir özellik yazın. "Özellik: Değer" formatında veya sadece metin olarak.
+                            </p>
                         </div>
 
                         {/* Dökümanlar */}
