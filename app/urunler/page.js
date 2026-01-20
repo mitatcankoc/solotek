@@ -254,10 +254,14 @@ function ProductsContent() {
                                                             <div className="product-image">
                                                                 <div className="product-img img-zoom">
                                                                     <img
-                                                                        src={kategori.image || 'https://www.janusbarkod.com.tr/upload/38/mobile.jpg'}
+                                                                        src={kategori.image || kategori.resim || '/assets/img/products/default-category.jpg'}
                                                                         alt={`${kategori.name} - Solo Teknoloji Ürün Kategorisi`}
                                                                         title={kategori.name}
                                                                         style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+                                                                        onError={(e) => {
+                                                                            e.target.onerror = null;
+                                                                            e.target.src = '/assets/img/products/default-category.jpg';
+                                                                        }}
                                                                     />
                                                                 </div>
                                                                 <div className="cart-btn">
