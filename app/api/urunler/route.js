@@ -62,6 +62,18 @@ export async function GET(request) {
 
         const [rows] = await pool.query(query, params);
 
+        // JSON string alanlarını parse et
+        const parseJsonField = (field) => {
+            if (!field) return [];
+            if (Array.isArray(field)) return field;
+            try {
+                const parsed = JSON.parse(field);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        };
+
         // Admin panel uyumluluğu için alias ekle
         const result = rows.map(row => ({
             ...row,
@@ -69,9 +81,9 @@ export async function GET(request) {
             short_description: row.kisa_aciklama,
             description: row.aciklama,
             image: row.resim,
-            gallery: row.galeri,
-            documents: row.dokumanlar,
-            accessories: row.aksesuarlar,
+            gallery: parseJsonField(row.galeri),
+            documents: parseJsonField(row.dokumanlar),
+            accessories: parseJsonField(row.aksesuarlar),
             status: row.aktif ? 'Aktif' : 'Pasif',
             featured: row.one_cikan === 1
         }));

@@ -29,9 +29,10 @@ export default function ProductDetailPage() {
             const katRes = await fetch('/api/kategoriler')
             if (katRes.ok) {
                 const kategoriler = await katRes.json()
-                setAllKategoriler(kategoriler)
+                const katArray = Array.isArray(kategoriler) ? kategoriler : []
+                setAllKategoriler(katArray)
 
-                const currentKat = kategoriler.find(k => k.slug === kategori)
+                const currentKat = katArray.find(k => k.slug === kategori)
                 if (currentKat) {
                     setKategoriData(currentKat)
                 }
@@ -41,15 +42,18 @@ export default function ProductDetailPage() {
             const urunRes = await fetch(`/api/urunler/${urun}`)
             if (urunRes.ok) {
                 const data = await urunRes.json()
-                setUrunData(data)
-                setKategoriData({ id: data.kategori_id, name: data.kategori_adi, slug: data.kategori_slug })
-                setMarkaData({ id: data.marka_id, name: data.marka_adi, slug: data.marka_slug })
+                if (data && !data.error) {
+                    setUrunData(data)
+                    setKategoriData({ id: data.kategori_id, name: data.kategori_adi, slug: data.kategori_slug })
+                    setMarkaData({ id: data.marka_id, name: data.marka_adi, slug: data.marka_slug })
 
-                // Benzer ürünleri getir
-                const relatedRes = await fetch(`/api/urunler?kategori=${data.kategori_id}&limit=4`)
-                if (relatedRes.ok) {
-                    const related = await relatedRes.json()
-                    setRelatedProducts(related.filter(p => p.id !== data.id).slice(0, 4))
+                    // Benzer ürünleri getir
+                    const relatedRes = await fetch(`/api/urunler?kategori=${data.kategori_id}&limit=4`)
+                    if (relatedRes.ok) {
+                        const related = await relatedRes.json()
+                        const relatedArray = Array.isArray(related) ? related : []
+                        setRelatedProducts(relatedArray.filter(p => p.id !== data.id).slice(0, 4))
+                    }
                 }
             }
         } catch (error) {

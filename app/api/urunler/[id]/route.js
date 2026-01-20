@@ -33,6 +33,18 @@ export async function GET(request, context) {
             return NextResponse.json({ error: 'Ürün bulunamadı' }, { status: 404 });
         }
 
+        // JSON string alanlarını parse et
+        const parseJsonField = (field) => {
+            if (!field) return [];
+            if (Array.isArray(field)) return field;
+            try {
+                const parsed = JSON.parse(field);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch {
+                return [];
+            }
+        };
+
         // Admin panel uyumluluğu için alias ekle
         const urun = {
             ...rows[0],
@@ -40,9 +52,9 @@ export async function GET(request, context) {
             short_description: rows[0].kisa_aciklama,
             description: rows[0].aciklama,
             image: rows[0].resim,
-            gallery: rows[0].galeri,
-            documents: rows[0].dokumanlar,
-            accessories: rows[0].aksesuarlar,
+            gallery: parseJsonField(rows[0].galeri),
+            documents: parseJsonField(rows[0].dokumanlar),
+            accessories: parseJsonField(rows[0].aksesuarlar),
             status: rows[0].aktif ? 'Aktif' : 'Pasif',
             featured: rows[0].one_cikan === 1
         };
