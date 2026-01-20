@@ -447,7 +447,13 @@ export default function ProductDetailPage() {
                                                             {activeTab === 1 && (
                                                                 <div
                                                                     dangerouslySetInnerHTML={{ __html: urunData.description || urunData.short_description }}
-                                                                    style={{ lineHeight: '1.8', color: '#555', fontSize: '14px' }}
+                                                                    style={{
+                                                                        lineHeight: '1.8',
+                                                                        color: '#555',
+                                                                        fontSize: '14px',
+                                                                        whiteSpace: 'pre-line'
+                                                                    }}
+                                                                    className="product-description"
                                                                 />
                                                             )}
 
@@ -670,6 +676,35 @@ export default function ProductDetailPage() {
                     </div>
                 </div>
             </Layout>
+            <style jsx global>{`
+                .product-description {
+                    white-space: pre-line;
+                }
+                .product-description p {
+                    margin-bottom: 15px;
+                }
+                .product-description h1,
+                .product-description h2,
+                .product-description h3,
+                .product-description h4 {
+                    margin-top: 20px;
+                    margin-bottom: 10px;
+                    color: #161540;
+                    font-weight: 600;
+                }
+                .product-description ul,
+                .product-description ol {
+                    margin-bottom: 15px;
+                    padding-left: 25px;
+                }
+                .product-description li {
+                    margin-bottom: 8px;
+                }
+                .product-description strong,
+                .product-description b {
+                    color: #333;
+                }
+            `}</style>
         </>
     )
 }
