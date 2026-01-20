@@ -93,7 +93,8 @@ export default function ProductDetailPage() {
     // Galeri resimleri
     const allImages = [urunData.image, ...(urunData.gallery || [])].filter(Boolean)
 
-    // Dökümanlar ve aksesuarlar
+    // Özellikler, Dökümanlar ve aksesuarlar
+    const features = urunData.features || []
     const documents = urunData.documents || []
     const accessories = urunData.accessories || []
 
@@ -380,7 +381,8 @@ export default function ProductDetailPage() {
                                                             marginBottom: '20px',
                                                             listStyle: 'none',
                                                             padding: 0,
-                                                            borderBottom: '2px solid #eee'
+                                                            borderBottom: '2px solid #eee',
+                                                            flexWrap: 'wrap'
                                                         }}>
                                                             <li>
                                                                 <button
@@ -413,7 +415,7 @@ export default function ProductDetailPage() {
                                                                         borderRadius: '4px 4px 0 0'
                                                                     }}
                                                                 >
-                                                                    Dökümanlar
+                                                                    Özellikler
                                                                 </button>
                                                             </li>
                                                             <li>
@@ -424,6 +426,23 @@ export default function ProductDetailPage() {
                                                                         border: 'none',
                                                                         background: activeTab === 3 ? '#21bb9f' : 'transparent',
                                                                         color: activeTab === 3 ? '#fff' : '#666',
+                                                                        cursor: 'pointer',
+                                                                        fontWeight: '600',
+                                                                        fontSize: '14px',
+                                                                        borderRadius: '4px 4px 0 0'
+                                                                    }}
+                                                                >
+                                                                    Dökümanlar
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <button
+                                                                    onClick={() => setActiveTab(4)}
+                                                                    style={{
+                                                                        padding: '12px 20px',
+                                                                        border: 'none',
+                                                                        background: activeTab === 4 ? '#21bb9f' : 'transparent',
+                                                                        color: activeTab === 4 ? '#fff' : '#666',
                                                                         cursor: 'pointer',
                                                                         fontWeight: '600',
                                                                         fontSize: '14px',
@@ -457,8 +476,46 @@ export default function ProductDetailPage() {
                                                                 />
                                                             )}
 
-                                                            {/* Dökümanlar Tab */}
+                                                            {/* Özellikler Tab */}
                                                             {activeTab === 2 && (
+                                                                <div>
+                                                                    {features.length > 0 ? (
+                                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                                                                            {features.map((feature, index) => (
+                                                                                <div key={index} style={{
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'flex-start',
+                                                                                    gap: '10px',
+                                                                                    padding: '12px',
+                                                                                    background: '#fff',
+                                                                                    borderRadius: '8px',
+                                                                                    border: '1px solid #eee'
+                                                                                }}>
+                                                                                    <i className="fa-solid fa-check-circle" style={{ color: '#21bb9f', fontSize: '16px', marginTop: '2px' }}></i>
+                                                                                    <div>
+                                                                                        {feature.label && (
+                                                                                            <span style={{ fontWeight: '600', color: '#333', fontSize: '13px', display: 'block', marginBottom: '3px' }}>
+                                                                                                {feature.label}
+                                                                                            </span>
+                                                                                        )}
+                                                                                        <span style={{ fontSize: '13px', color: '#666', lineHeight: '1.5' }}>
+                                                                                            {feature.value || feature.name || (typeof feature === 'string' ? feature : '')}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div style={{ textAlign: 'center', padding: '30px', color: '#999' }}>
+                                                                            <i className="fa-solid fa-list-check" style={{ fontSize: '40px', marginBottom: '15px', opacity: 0.5 }}></i>
+                                                                            <p style={{ margin: 0 }}>Bu ürün için özellik bilgisi bulunmamaktadır.</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Dökümanlar Tab */}
+                                                            {activeTab === 3 && (
                                                                 <div>
                                                                     {documents.length > 0 ? (
                                                                         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
@@ -502,7 +559,7 @@ export default function ProductDetailPage() {
                                                             )}
 
                                                             {/* Aksesuarlar Tab */}
-                                                            {activeTab === 3 && (
+                                                            {activeTab === 4 && (
                                                                 <div>
                                                                     {accessories.length > 0 ? (
                                                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>

@@ -53,6 +53,7 @@ export async function GET(request, context) {
             description: rows[0].aciklama,
             image: rows[0].resim,
             gallery: parseJsonField(rows[0].galeri),
+            features: parseJsonField(rows[0].ozellikler),
             documents: parseJsonField(rows[0].dokumanlar),
             accessories: parseJsonField(rows[0].aksesuarlar),
             status: rows[0].aktif ? 'Aktif' : 'Pasif',
