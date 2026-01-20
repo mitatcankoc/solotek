@@ -27,7 +27,7 @@ export default function Header1({ scroll, isMobileMenu, handleMobileMenu }) {
                                         </div>
                                         <div className="quick_contact_content">
                                             <small>Bizi Arayın</small>
-                                            <Link href="tel:+905365014600">+90 536 501 46 00</Link>
+                                            <Link href="tel:+902163266000">0216 326 60 00</Link>
                                         </div>
                                     </div>
                                 </div>

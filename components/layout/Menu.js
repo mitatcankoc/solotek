@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 export default function Menu() {
     const routerPath = usePathname();
     const [openDropdown, setOpenDropdown] = useState(null);
+    const [kategoriler, setKategoriler] = useState([]);
 
     useEffect(() => {
         if (routerPath == "/index-rtl-1") {
@@ -18,6 +19,22 @@ export default function Menu() {
             document.body.classList.remove("rtl-version");
         }
     });
+
+    // Kategorileri API'den çek
+    useEffect(() => {
+        const fetchKategoriler = async () => {
+            try {
+                const res = await fetch('/api/kategoriler');
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    setKategoriler(data);
+                }
+            } catch (error) {
+                console.error('Kategoriler yüklenemedi:', error);
+            }
+        };
+        fetchKategoriler();
+    }, []);
 
     const handleMouseEnter = (menu) => {
         setOpenDropdown(menu);
@@ -36,8 +53,41 @@ export default function Menu() {
                 <li>
                     <Link href="/hizmetlerimiz" className={routerPath === "/hizmetlerimiz" ? "active" : ""}>Hizmetlerimiz</Link>
                 </li>
-                <li>
-                    <Link href="/urunler" className={routerPath.startsWith("/urunler") ? "active" : ""}>Ürünlerimiz</Link>
+                <li
+                    className={`has-dropdown ${openDropdown === 'urunler' ? 'active' : ''}`}
+                    onMouseEnter={() => handleMouseEnter('urunler')}
+                    onMouseLeave={handleMouseLeave}
+                    style={{ position: 'relative' }}
+                >
+                    <Link href="/urunler" className={routerPath.startsWith("/urunler") ? "active" : ""}>
+                        Ürünlerimiz <i className="fa-solid fa-angle-down" style={{ fontSize: '12px', marginLeft: '5px' }}></i>
+                    </Link>
+                    <ul className="sub-menu" style={{
+                        display: openDropdown === 'urunler' ? 'block' : 'none',
+                        position: 'absolute',
+                        top: '100%',
+                        left: '0',
+                        background: '#fff',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                        borderRadius: '8px',
+                        padding: '10px 0',
+                        zIndex: '999',
+                        minWidth: '200px'
+                    }}>
+                        {kategoriler.map((kategori) => (
+                            <li key={kategori.id}>
+                                <Link href={`/urunler/${kategori.slug}`} style={{
+                                    display: 'block',
+                                    padding: '10px 25px',
+                                    color: '#333',
+                                    whiteSpace: 'nowrap',
+                                    transition: 'all 0.3s'
+                                }}>
+                                    {kategori.ad}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
                 </li>
                 <li
                     className={`has-dropdown ${openDropdown === 'hakkimizda' ? 'active' : ''}`}
