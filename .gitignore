@@ -134,3 +134,9 @@ dist
 *.exe
 *.dmg
 *.pkg
+
+# Environment variables - GÜVENLIK
+.env
+.env.local
+.env.production
+.env.development
