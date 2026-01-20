@@ -257,12 +257,11 @@ export default function Page() {
                                                             required
                                                         >
                                                             <option value="">Demo İstediğiniz Ürün/Hizmet *</option>
-                                                            <option value="pos">POS Sistemleri</option>
-                                                            <option value="barkod">Barkod Okuyucular</option>
-                                                            <option value="terminal">El Terminalleri</option>
-                                                            <option value="terazi">Terazi Sistemleri</option>
-                                                            <option value="yazilim">Yazılım Çözümleri</option>
-                                                            <option value="entegrasyon">Sistem Entegrasyonu</option>
+                                                            <option value="el-terminalleri">El Terminalleri</option>
+                                                            <option value="barkod-yazicilar">Barkod Yazıcılar</option>
+                                                            <option value="barkod-okuyucular">Barkod Okuyucular</option>
+                                                            <option value="mobil-yazicilar">Mobil Yazıcılar</option>
+                                                            <option value="endustriyel-panel-pc">Endüstriyel Panel PC</option>
                                                             <option value="diger">Diğer</option>
                                                         </select>
                                                     </div>
