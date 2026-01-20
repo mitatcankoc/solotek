@@ -23,6 +23,7 @@ export default function UrunDuzenle() {
         description: '',
         image: '',
         gallery: [],
+        features: [],
         documents: [],
         accessories: [],
         status: 'Aktif',
@@ -71,6 +72,7 @@ export default function UrunDuzenle() {
                     description: data.description || '',
                     image: data.image || '',
                     gallery: data.gallery || [],
+                    features: data.features || [],
                     documents: data.documents || [],
                     accessories: data.accessories || [],
                     status: data.status || 'Aktif',
@@ -194,6 +196,27 @@ export default function UrunDuzenle() {
             gallery: prev.gallery.map((img, i) => i === galleryIndex ? oldMainImage : img).filter(Boolean)
         }))
         setImagePreview(galleryImage)
+    }
+
+    // Özellik ekleme
+    const addFeature = () => {
+        setFormData(prev => ({
+            ...prev,
+            features: [...prev.features, { label: '', value: '' }]
+        }))
+    }
+
+    const updateFeature = (index, field, value) => {
+        const newFeatures = [...formData.features]
+        newFeatures[index][field] = value
+        setFormData(prev => ({ ...prev, features: newFeatures }))
+    }
+
+    const removeFeature = (index) => {
+        setFormData(prev => ({
+            ...prev,
+            features: prev.features.filter((_, i) => i !== index)
+        }))
     }
 
     // Döküman ekleme
@@ -323,6 +346,7 @@ export default function UrunDuzenle() {
         try {
             const submitData = {
                 ...formData,
+                features: formData.features.filter(f => f.label.trim() !== '' || f.value.trim() !== ''),
                 documents: formData.documents.filter(d => d.name.trim() !== ''),
                 accessories: formData.accessories.filter(a => a.name.trim() !== '')
             }
@@ -413,6 +437,32 @@ export default function UrunDuzenle() {
                                     style={{ width: '100%', padding: '12px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none', resize: 'vertical' }}
                                     placeholder="Ürün hakkında detaylı bilgi... (HTML desteklenir)" />
                             </div>
+                        </div>
+
+                        {/* Özellikler */}
+                        <div style={{ background: '#fff', borderRadius: '16px', padding: '25px', marginBottom: '20px' }}>
+                            <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#161540', marginBottom: '20px' }}>
+                                <i className="fa-solid fa-list-check" style={{ color: '#10b981', marginRight: '10px' }}></i>
+                                Teknik Özellikler
+                            </h3>
+                            {formData.features.map((feature, index) => (
+                                <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '15px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                    <input type="text" value={feature.label} onChange={(e) => updateFeature(index, 'label', e.target.value)}
+                                        style={{ flex: '1 1 150px', padding: '10px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
+                                        placeholder="Özellik adı (Örn: Ekran)" />
+                                    <input type="text" value={feature.value} onChange={(e) => updateFeature(index, 'value', e.target.value)}
+                                        style={{ flex: '2 1 250px', padding: '10px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
+                                        placeholder="Değer (Örn: 6.0 inch FHD)" />
+                                    <button type="button" onClick={() => removeFeature(index)}
+                                        style={{ padding: '10px 15px', background: 'rgba(239, 68, 68, 0.1)', border: 'none', borderRadius: '10px', color: '#ef4444', cursor: 'pointer' }}>
+                                        <i className="fa-solid fa-times"></i>
+                                    </button>
+                                </div>
+                            ))}
+                            <button type="button" onClick={addFeature}
+                                style={{ padding: '10px 20px', background: 'rgba(16, 185, 129, 0.1)', border: 'none', borderRadius: '10px', color: '#10b981', cursor: 'pointer', fontSize: '13px' }}>
+                                <i className="fa-solid fa-plus" style={{ marginRight: '5px' }}></i> Özellik Ekle
+                            </button>
                         </div>
 
                         {/* Dökümanlar */}

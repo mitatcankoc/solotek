@@ -113,6 +113,7 @@ export async function POST(request) {
         const aciklama = data.aciklama || data.description;
         const resim = data.resim || data.image;
         const galeri = data.galeri || data.gallery;
+        const ozellikler = data.ozellikler || data.features;
         const dokumanlar = data.dokumanlar || data.documents;
         const aksesuarlar = data.aksesuarlar || data.accessories;
         const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
@@ -126,12 +127,13 @@ export async function POST(request) {
 
         const [result] = await pool.query(
             `INSERT INTO urunler (ad, slug, kategori_id, marka_id, kisa_aciklama, aciklama,
-             resim, galeri, dokumanlar, aksesuarlar, aktif, one_cikan) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             resim, galeri, ozellikler, dokumanlar, aksesuarlar, aktif, one_cikan) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 ad, finalSlug, kategori_id, marka_id, kisa_aciklama, aciklama,
                 resim,
                 galeri ? JSON.stringify(galeri) : null,
+                ozellikler ? JSON.stringify(ozellikler) : null,
                 dokumanlar ? JSON.stringify(dokumanlar) : null,
                 aksesuarlar ? JSON.stringify(aksesuarlar) : null,
                 aktif, one_cikan
