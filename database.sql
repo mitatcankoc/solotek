@@ -136,10 +136,12 @@ CREATE TABLE IF NOT EXISTS referanslar (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO referanslar (firma_adi, logo_url, sektor, one_cikan, sira) VALUES 
-('Zebra Technologies', '/assets/img/re/zebra-logo-horizontal.svg', 'Teknoloji', 1, 1),
-('Honeywell', '/assets/img/re/HON logo_200x37 2.png', 'Teknoloji', 1, 2),
-('Datalogic', '/assets/img/re/logo.png', 'Teknoloji', 1, 3)
+INSERT INTO referanslar (firma_adi, slug, logo_url, aciklama, sektor, one_cikan, sira) VALUES 
+('Koç Holding', 'koc-holding', '/assets/img/kocholding.png', 'Türkiye''nin en büyük sanayi ve hizmetler grubu', 'Holding', 1, 1),
+('Avansas', 'avansas', '/assets/img/avansas.png', 'Türkiye''nin lider ofis malzemeleri tedarikçisi', 'E-Ticaret', 1, 2),
+('Honeywell', 'honeywell', '/assets/img/re/HON logo_200x37 2.png', 'Küresel teknoloji ve üretim şirketi', 'Teknoloji', 1, 3),
+('Datalogic', 'datalogic', '/assets/img/re/logo.png', 'Otomatik veri toplama ve endüstriyel otomasyon çözümleri', 'Teknoloji', 1, 4),
+('Zebra', 'zebra', '/assets/img/re/zebra-logo-horizontal.svg', 'Kurumsal varlık izleme ve veri yakalama çözümleri', 'Teknoloji', 1, 5)
 ON DUPLICATE KEY UPDATE firma_adi = VALUES(firma_adi);
 
 CREATE TABLE IF NOT EXISTS suruculer (

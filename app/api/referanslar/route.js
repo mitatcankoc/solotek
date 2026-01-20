@@ -2,10 +2,29 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
 // GET - Tüm referansları getir
-export async function GET() {
+export async function GET(request) {
     try {
-        const [rows] = await pool.query('SELECT * FROM referanslar WHERE aktif = 1 ORDER BY sira ASC, created_at DESC');
-        return NextResponse.json(rows);
+        const { searchParams } = new URL(request.url);
+        const all = searchParams.get('all');
+
+        let query = 'SELECT * FROM referanslar';
+        if (!all) {
+            query += ' WHERE aktif = 1';
+        }
+        query += ' ORDER BY sira ASC, created_at DESC';
+
+        const [rows] = await pool.query(query);
+
+        // Admin panel uyumluluğu için alias ekle
+        const result = rows.map(row => ({
+            ...row,
+            name: row.firma_adi,
+            logo: row.logo_url || row.logo,
+            description: row.aciklama,
+            status: row.aktif ? 'Aktif' : 'Pasif'
+        }));
+
+        return NextResponse.json(result);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -20,11 +39,22 @@ export async function GET() {
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan, sira } = data;
+
+        // Frontend ve database uyumluluğu
+        const firma_adi = data.firma_adi || data.name;
+        const slug = data.slug;
+        const logo = data.logo;
+        const logo_url = data.logo_url || data.logo;
+        const aciklama = data.aciklama || data.description;
+        const sektor = data.sektor;
+        const website = data.website;
+        const one_cikan = data.one_cikan || 0;
+        const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
+        const sira = data.sira || 0;
 
         const [result] = await pool.query(
-            'INSERT INTO referanslar (firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan, aktif, sira) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?)',
-            [firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan || 0, sira || 0]
+            'INSERT INTO referanslar (firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan, aktif, sira) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan, aktif, sira]
         );
 
         return NextResponse.json({

@@ -12,7 +12,16 @@ export async function GET(request, context) {
             return NextResponse.json({ error: 'Referans bulunamadı' }, { status: 404 });
         }
 
-        return NextResponse.json(rows[0]);
+        // Admin panel uyumluluğu için alias ekle
+        const referans = {
+            ...rows[0],
+            name: rows[0].firma_adi,
+            logo: rows[0].logo_url || rows[0].logo,
+            description: rows[0].aciklama,
+            status: rows[0].aktif ? 'Aktif' : 'Pasif'
+        };
+
+        return NextResponse.json(referans);
     } catch (error) {
         console.error('Veritabanı hatası:', error);
         return NextResponse.json({
@@ -28,7 +37,18 @@ export async function PUT(request, context) {
     try {
         const { id } = await context.params;
         const data = await request.json();
-        const { firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan, aktif, sira } = data;
+
+        // Admin panel ve database uyumluluğu
+        const firma_adi = data.firma_adi || data.name;
+        const slug = data.slug;
+        const logo = data.logo;
+        const logo_url = data.logo_url || data.logo;
+        const aciklama = data.aciklama || data.description;
+        const sektor = data.sektor;
+        const website = data.website;
+        const one_cikan = data.one_cikan || 0;
+        const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
+        const sira = data.sira || 0;
 
         const [referans] = await pool.query('SELECT id FROM referanslar WHERE id = ?', [id]);
 
@@ -38,7 +58,7 @@ export async function PUT(request, context) {
 
         await pool.query(
             'UPDATE referanslar SET firma_adi=?, slug=?, logo=?, logo_url=?, aciklama=?, sektor=?, website=?, one_cikan=?, aktif=?, sira=? WHERE id=?',
-            [firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan ?? 0, aktif ?? 1, sira ?? 0, id]
+            [firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan, aktif, sira, id]
         );
 
         return NextResponse.json({ message: 'Referans başarıyla güncellendi' });
