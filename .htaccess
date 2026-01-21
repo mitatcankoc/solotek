@@ -1,17 +1,24 @@
-# LiteSpeed cache disable for HTML
-<IfModule LiteSpeed>
 RewriteEngine On
-RewriteRule .* - [E=Cache-Control:no-cache]
+
+# Ana sayfa icin ZORUNLU cache bypass - her istekte yeni HTML
+RewriteCond %{REQUEST_URI} ^/$
+RewriteCond %{QUERY_STRING} ^$
+RewriteRule ^$ /?_nocache=%{TIME} [R=302,L]
+
+# LiteSpeed Cache - TAMAMEN kapat
+<IfModule LiteSpeed>
+CacheDisable public /
+CacheLookup off
 </IfModule>
 
-# Disable caching for HTML pages - prevents stale content after deployment
+# Headers - Cache KAPAT
 <IfModule mod_headers.c>
-Header set Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate"
-Header set Pragma "no-cache"
-Header set Expires "0"
+Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+Header always set Pragma "no-cache"
+Header always set Expires "Thu, 01 Jan 1970 00:00:00 GMT"
 </IfModule>
 
-# Passenger Node.js Configuration
+# Passenger Node.js Config
 PassengerAppRoot /home/u136381340/domains/soloteknoloji.tr/public_html
 PassengerAppType node
 PassengerStartupFile server.js
