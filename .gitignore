@@ -140,3 +140,8 @@ dist
 .env.local
 .env.production
 .env.development
+
+# UPLOADS - Canlida ki dosyalar silinmesin
+public/uploads/
+public/uploads/*
+!public/uploads/.gitkeep
