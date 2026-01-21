@@ -1,0 +1,40 @@
+# Solo Teknoloji - Cache Kontrolleri
+# HTML sayfalari icin cache devre disi
+
+# LiteSpeed Cache devre disi
+<IfModule LiteSpeed>
+    CacheLookup off
+</IfModule>
+
+<IfModule litespeed>
+    CacheDisable public /
+</IfModule>
+
+# HTML ve dinamik icerik icin cache yok
+<IfModule mod_headers.c>
+    # Ana HTML sayfalar icin
+    <FilesMatch "\.(html|htm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+    
+    # Tum yanıtlar icin varsayilan
+    Header always set Cache-Control "no-cache, no-store, must-revalidate" "expr=%{CONTENT_TYPE} =~ m#text/html#i"
+</IfModule>
+
+# CDN ve Proxy cache devre disi
+<IfModule mod_headers.c>
+    Header set CDN-Cache-Control "no-store"
+    Header set Surrogate-Control "no-store"
+    Header set Vary "Accept-Encoding"
+</IfModule>
+
+# Rewrite kurallari
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # www olmadan www'ye yonlendir (opsiyonel)
+    # RewriteCond %{HTTP_HOST} !^www\. [NC]
+    # RewriteRule ^(.*)$ https://www.%{HTTP_HOST}/$1 [R=301,L]
+</IfModule>
