@@ -480,18 +480,10 @@ export default function ProductDetailPage() {
                                                             {activeTab === 2 && (
                                                                 <div>
                                                                     {features.length > 0 ? (
-                                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                                                                        <div className="features-grid">
                                                                             {features.map((feature, index) => (
-                                                                                <div key={index} style={{
-                                                                                    display: 'flex',
-                                                                                    alignItems: 'flex-start',
-                                                                                    gap: '10px',
-                                                                                    padding: '12px',
-                                                                                    background: '#fff',
-                                                                                    borderRadius: '8px',
-                                                                                    border: '1px solid #eee'
-                                                                                }}>
-                                                                                    <i className="fa-solid fa-check-circle" style={{ color: '#21bb9f', fontSize: '16px', marginTop: '2px' }}></i>
+                                                                                <div key={index} className="feature-item">
+                                                                                    <i className="fa-solid fa-check-circle" style={{ color: '#21bb9f', fontSize: '16px', marginTop: '2px', flexShrink: 0 }}></i>
                                                                                     <div>
                                                                                         {feature.label && (
                                                                                             <span style={{ fontWeight: '600', color: '#333', fontSize: '13px', display: 'block', marginBottom: '3px' }}>
@@ -760,6 +752,47 @@ export default function ProductDetailPage() {
                 .product-description strong,
                 .product-description b {
                     color: #333;
+                }
+                
+                /* Özellikler Grid - Responsive */
+                .features-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 12px;
+                }
+                
+                .feature-item {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    padding: 12px;
+                    background: #fff;
+                    border-radius: 8px;
+                    border: 1px solid #eee;
+                }
+                
+                /* Tablet ve altı (768px) */
+                @media (max-width: 768px) {
+                    .features-grid {
+                        grid-template-columns: 1fr !important;
+                        gap: 10px;
+                    }
+                    
+                    .feature-item {
+                        padding: 14px;
+                    }
+                }
+                
+                /* Küçük mobil */
+                @media (max-width: 480px) {
+                    .feature-item {
+                        padding: 12px 10px;
+                        gap: 8px;
+                    }
+                    
+                    .feature-item span {
+                        font-size: 12px !important;
+                    }
                 }
             `}</style>
         </>
