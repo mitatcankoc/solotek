@@ -6,6 +6,7 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
         status: false,
         key: "",
     });
+    const [kategoriler, setKategoriler] = useState([]);
 
     // Mobil menü açıkken body'ye class ekle
     useEffect(() => {
@@ -20,6 +21,22 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
             document.body.classList.remove('mobile-menu-open');
         };
     }, [isMobileMenu]);
+
+    // Kategorileri API'den çek
+    useEffect(() => {
+        const fetchKategoriler = async () => {
+            try {
+                const res = await fetch('/api/kategoriler');
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    setKategoriler(data);
+                }
+            } catch (error) {
+                console.error('Kategoriler yüklenemedi:', error);
+            }
+        };
+        fetchKategoriler();
+    }, []);
 
     const handleToggle = (key) => {
         if (isActive.key === key) {
@@ -79,8 +96,38 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
                         <li>
                             <Link href="/hizmetlerimiz">Hizmetlerimiz</Link>
                         </li>
-                        <li>
-                            <Link href="/urunler">Ürünlerimiz</Link>
+                        <li className="has-children">
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Link href="/urunler" style={{ color: '#fff' }}>
+                                    Ürünlerimiz
+                                </Link>
+                                <i
+                                    onClick={() => handleToggle('urunler')}
+                                    className={`fa-solid ${isActive.key === 'urunler' ? 'fa-angle-up' : 'fa-angle-down'}`}
+                                    style={{ cursor: 'pointer', color: '#fff', padding: '10px' }}
+                                />
+                            </div>
+                            <ul className="mobile-menu-sub" style={{
+                                display: isActive.key === 'urunler' ? 'block' : 'none',
+                                background: '#fff',
+                                borderRadius: '8px',
+                                padding: '10px 15px',
+                                marginTop: '10px'
+                            }}>
+                                {kategoriler.map((kategori) => (
+                                    <li key={kategori.id} style={{ marginBottom: '8px' }}>
+                                        <Link href={`/urunler/${kategori.slug}`} style={{ color: '#333' }}>
+                                            {kategori.ad}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
                         </li>
                         <li className="has-children">
                             <div
@@ -159,7 +206,7 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
                                     <div className="contact-icon">
                                         <i className="fa-solid fa-phone"></i>
                                     </div>
-                                    <Link href="tel:+905365014600">+90 536 501 46 00</Link>
+                                    <Link href="tel:+902163266000">0216 326 60 00</Link>
                                     <Link href="tel:+905438624751">+90 543 862 47 51</Link>
                                 </div>
                             </div>
@@ -186,3 +233,4 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
         </>
     );
 }
+
