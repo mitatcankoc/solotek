@@ -11,7 +11,7 @@ export default function Welcome() {
                         <div className="col-lg-6">
                             <div className="title title2 ">
                                 <small data-aos="fade-right" data-aos-duration={600} className="heading-top2">⭐ Uzman Ekip & Deneyimli Kadro</small>
-                                <h1 data-aos="fade-right" data-aos-duration={800} style={{ fontSize: '52px', lineHeight: '1.15' }}>El Terminali, Barkod Yazıcı ve Otomasyon Çözümleri</h1>
+                                <h1 data-aos="fade-right" data-aos-duration={800} className="hero-title">El Terminali, Barkod Yazıcı ve Otomasyon Çözümleri</h1>
                                 <p data-aos="fade-right" data-aos-duration={1000}>El terminalleri, barkod yazıcılar, barkod okuyucular, otomasyon sistemleri ve endüstriyel panel PC çözümleri. Satış, kurulum ve teknik servis desteğinde öncü kuruluş.</p>
                                 <div className="space30" />
                                 <div className="btn-group" data-aos="fade-right" data-aos-duration={1200}>
