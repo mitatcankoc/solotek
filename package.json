@@ -7,6 +7,7 @@
     },
     "scripts": {
         "dev": "next dev",
+        "prebuild": "rm -rf .next || true",
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
