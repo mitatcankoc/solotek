@@ -45,10 +45,10 @@ jobs:
             -e "ssh -p 65002 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
             ./ u136381340@46.202.157.202:/home/u136381340/domains/soloteknoloji.tr/public_html/
 
-      - name: Install dependencies on server
+      - name: Find npm path and install dependencies
         run: |
-          ssh -p 65002 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no u136381340@46.202.157.202 "source ~/.nvm/nvm.sh && cd /home/u136381340/domains/soloteknoloji.tr/public_html && npm ci --production"
+          ssh -p 65002 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no u136381340@46.202.157.202 "bash -l -c 'cd /home/u136381340/domains/soloteknoloji.tr/public_html && which npm && npm ci --production'"
 
       - name: Restart Next.js
         run: |
-          ssh -p 65002 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no u136381340@46.202.157.202 "source ~/.nvm/nvm.sh && cd /home/u136381340/domains/soloteknoloji.tr/public_html && pm2 restart solo || pm2 start npm --name solo -- start"
+          ssh -p 65002 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no u136381340@46.202.157.202 "bash -l -c 'cd /home/u136381340/domains/soloteknoloji.tr/public_html && (pm2 restart solo 2>/dev/null || pm2 start npm --name solo -- start)'"
