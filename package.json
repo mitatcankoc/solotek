@@ -9,7 +9,7 @@
         "dev": "next dev --turbopack",
         "prebuild": "mkdir -p /home/u136381340/.next_backup && cp -r .next/static /home/u136381340/.next_backup/ 2>/dev/null || true",
         "build": "next build",
-        "postbuild": "cp -r /home/u136381340/.next_backup/static/* .next/static/ 2>/dev/null || true; rm -rf public/uploads 2>/dev/null; ln -s /home/u136381340/uploads_safe public/uploads 2>/dev/null || true",
+        "postbuild": "cp -r /home/u136381340/.next_backup/static/* .next/static/ 2>/dev/null || true; rm -rf public/uploads 2>/dev/null; ln -s /home/u136381340/uploads_safe public/uploads 2>/dev/null || true; pkill -9 -f 'next-server' 2>/dev/null || true",
         "start": "next start",
         "lint": "next lint",
         "sass": "sass --watch public/assets/scss/main.scss:public/assets/css/main.css"
