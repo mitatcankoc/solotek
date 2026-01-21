@@ -27,8 +27,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
     return (
-        <html lang="en" id="#top">
-            <body>{children}</body>
+        <html lang="tr" id="#top" translate="no" suppressHydrationWarning>
+            <head>
+                <meta name="google" content="notranslate" />
+            </head>
+            <body suppressHydrationWarning>{children}</body>
         </html>
     );
 }
