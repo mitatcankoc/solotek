@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { sendContactEmail } from '@/lib/email';
 
 // GET - Tüm iletişim mesajlarını getir
 export async function GET() {
@@ -48,6 +49,15 @@ export async function POST(request) {
             'INSERT INTO iletisim (ad_soyad, email, telefon, konu, mesaj, ip_adresi, durum) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [ad_soyad, email, telefon || null, konu || null, mesaj, ip_adresi, 'yeni']
         );
+
+        // Email gönder
+        try {
+            await sendContactEmail({ ad_soyad, email, telefon, konu, mesaj });
+            console.log('İletişim email gönderildi:', email);
+        } catch (emailError) {
+            console.error('Email gönderilemedi:', emailError);
+            // Email hatası olsa bile form başarılı kabul edilsin
+        }
 
         return NextResponse.json({
             message: 'Mesajınız başarıyla gönderildi',

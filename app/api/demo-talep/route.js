@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { sendDemoRequestEmail } from '@/lib/email';
 
 // GET - Tüm demo taleplerini getir
 export async function GET() {
@@ -53,6 +54,15 @@ export async function POST(request) {
             'INSERT INTO demo_talep (ad_soyad, email, telefon, firma, sektor, urun_ilgi, mesaj, durum, ip_adresi) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [ad_soyad, email, telefon, firma || null, sektor || null, urun_ilgi || null, mesaj || null, 'beklemede', ip_adresi]
         );
+
+        // Email gönder
+        try {
+            await sendDemoRequestEmail({ ad_soyad, email, telefon, firma, sektor, urun_ilgi, mesaj });
+            console.log('Demo talep email gönderildi:', email);
+        } catch (emailError) {
+            console.error('Email gönderilemedi:', emailError);
+            // Email hatası olsa bile form başarılı kabul edilsin
+        }
 
         return NextResponse.json({
             message: 'Demo talebiniz alındı',
