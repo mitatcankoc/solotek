@@ -28,13 +28,13 @@ export default function Page() {
                                             </small>
                                             <h2>Solo Teknoloji San. Tic. Ltd. Şti.</h2>
                                             <p>
-                                                Solo Teknoloji, 2020 yılında yazar kasa satışı ile başladığı iş hayatında, kısa zamanda bünyesine kattığı teknik destek hizmeti ile sektöre güçlü bir giriş yapmıştır. Barkodlu sistem satış ve kurulumunun yanı sıra terazi ve yazılımlarla donattığı ürün yelpazesi ve hizmetleri ile sektörün tanınan ve bilinen kurumları arasına girerek çok sayıda ödül almıştır.
+                                                2020 yılından bu yana barkod sistemleri, el terminalleri ve kurumsal otomasyon çözümleri alanında hizmet veren Solo Teknoloji, sektörün önde gelen teknoloji entegratörlerinden biridir. Zebra, Honeywell ve Datalogic gibi dünya liderlerinin yetkili iş ortağı olarak, işletmelere uçtan uca çözümler sunuyoruz.
                                             </p>
                                             <p>
-                                                Otomasyon sistemleri ile uyumlu yeni nesil yazar kasa, barkodlu barkodsuz ürünler, terazi ve diğer aksesuarın satış, kurulum ve desteğinde öncü kuruluşlar arasında yer alan Solo Teknoloji güvenilir ve kaliteli hizmetler sunmaktadır.
+                                                El terminalleri, barkod okuyucular, etiket yazıcıları ve özelleştirilmiş yazılım çözümleriyle donatılmış kapsamlı ürün portföyümüz sayesinde, perakende, lojistik, üretim ve sağlık sektörlerinde yüzlerce işletmenin dijital dönüşümüne katkı sağladık.
                                             </p>
                                             <p>
-                                                Barkod, elektronik ve yazılım olmak üzere üç alanda Teknik Servis Desteği veren Solo Teknoloji, uzman bir kadroyla çalışmalarına devam etmektedir.
+                                                Deneyimli teknik kadromuz ve 7/24 destek hizmetimizle, müşterilerimizin operasyonel verimliliğini artırmayı ve iş süreçlerini optimize etmeyi hedefliyoruz.
                                             </p>
                                         </div>
                                     </div>
