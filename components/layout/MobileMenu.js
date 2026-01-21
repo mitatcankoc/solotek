@@ -161,10 +161,7 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
                             </ul>
                         </li>
                         <li>
-                            <Link href="/suruculer">Sürücüler</Link>
-                        </li>
-                        <li>
-                            <Link href="/blog">Blog</Link>
+                            <Link href="/suruculer">Destek</Link>
                         </li>
                         <li className="has-children">
                             <div

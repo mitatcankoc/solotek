@@ -123,10 +123,7 @@ export default function Menu() {
                     </ul>
                 </li>
                 <li>
-                    <Link href="/suruculer" className={routerPath === "/suruculer" ? "active" : ""}>Sürücüler</Link>
-                </li>
-                <li>
-                    <Link href="/blog" className={routerPath === "/blog" ? "active" : ""}>Blog</Link>
+                    <Link href="/suruculer" className={routerPath === "/suruculer" ? "active" : ""}>Destek</Link>
                 </li>
                 <li
                     className={`has-dropdown ${openDropdown === 'iletisim' ? 'active' : ''}`}
