@@ -6,9 +6,9 @@
         "node": ">=22.0.0"
     },
     "scripts": {
-        "dev": "next dev",
+        "dev": "next dev --turbopack",
         "prebuild": "rm -rf .next || true",
-        "build": "next build",
+        "build": "next build --no-turbopack",
         "start": "next start",
         "lint": "next lint",
         "sass": "sass --watch public/assets/scss/main.scss:public/assets/css/main.css"
