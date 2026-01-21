@@ -34,7 +34,7 @@ export default function Page() {
                                                 El terminalleri, barkod okuyucular, etiket yazıcıları ve özelleştirilmiş yazılım çözümleriyle donatılmış kapsamlı ürün portföyümüz sayesinde, perakende, lojistik, üretim ve sağlık sektörlerinde yüzlerce işletmenin dijital dönüşümüne katkı sağladık.
                                             </p>
                                             <p>
-                                                Deneyimli teknik kadromuz ve 7/24 destek hizmetimizle, müşterilerimizin operasyonel verimliliğini artırmayı ve iş süreçlerini optimize etmeyi hedefliyoruz.
+                                                Deneyimli teknik kadromuz ve profesyonel destek hizmetlerimizle, müşterilerimizin operasyonel verimliliğini artırmayı ve iş süreçlerini optimize etmeyi hedefliyoruz.
                                             </p>
                                         </div>
                                     </div>

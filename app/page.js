@@ -16,7 +16,7 @@ export default function Page() {
                 headerStyle={1}
                 footerStyle={1}
                 headTitle="Solo Teknoloji | POS Sistemleri, Barkod Çözümleri ve Teknik Servis"
-                metaDescription="Solo Teknoloji - Türkiye'nin lider barkod sistemleri, POS cihazları, el terminalleri ve teknik servis hizmetleri sağlayıcısı. Zebra, Honeywell, Datalogic yetkili distribütörü. 7/24 destek."
+                metaDescription="Solo Teknoloji - Türkiye'nin lider barkod sistemleri, POS cihazları, el terminalleri ve teknik servis hizmetleri sağlayıcısı. Zebra, Honeywell, Datalogic yetkili distribütörü."
                 metaKeywords="solo teknoloji, barkod sistemleri, pos cihazları, el terminali, barkod yazıcı, teknik servis, zebra, honeywell, datalogic, otomasyon sistemleri"
             >
                 <Welcome />

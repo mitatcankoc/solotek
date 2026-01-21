@@ -8,8 +8,8 @@ export default function Page() {
                 headerStyle={1}
                 footerStyle={1}
                 headTitle="Hizmetlerimiz | Barkod Satış, Kurulum ve Teknik Servis | Solo Teknoloji"
-                metaDescription="Solo Teknoloji hizmetleri - Barkod sistemi satış ve kurulum, teknik servis, yazılım entegrasyonu, otomasyon çözümleri ve 7/24 destek hizmetleri."
-                metaKeywords="barkod sistemi kurulum, pos teknik servis, yazılım entegrasyonu, otomasyon hizmeti, 7/24 destek, bakım sözleşmesi"
+                metaDescription="Solo Teknoloji hizmetleri - Barkod sistemi satış ve kurulum, teknik servis, yazılım entegrasyonu ve otomasyon çözümleri."
+                metaKeywords="barkod sistemi kurulum, pos teknik servis, yazılım entegrasyonu, otomasyon hizmeti, bakım sözleşmesi"
                 breadcrumbTitle="Hizmetlerimiz">
                 <div>
                     <div className="section-padding bg-28">
