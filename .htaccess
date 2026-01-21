@@ -1,0 +1,19 @@
+# LiteSpeed cache disable for HTML
+<IfModule LiteSpeed>
+RewriteEngine On
+RewriteRule .* - [E=Cache-Control:no-cache]
+</IfModule>
+
+# Disable caching for HTML pages - prevents stale content after deployment
+<IfModule mod_headers.c>
+Header set Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate"
+Header set Pragma "no-cache"
+Header set Expires "0"
+</IfModule>
+
+# Passenger Node.js Configuration
+PassengerAppRoot /home/u136381340/domains/soloteknoloji.tr/public_html
+PassengerAppType node
+PassengerStartupFile server.js
+PassengerNodejs /opt/alt/alt-nodejs22/root/bin/node
+PassengerBaseURI /
