@@ -66,8 +66,8 @@ export default function Page() {
                                         </div>
                                         <div className="contact-box-content">
                                             <p className="font-f-3">BİZİ ARAYIN</p>
-                                            <Link className="font-f-3" href="tel:+905365014600">+90 536 501 46 00</Link>
-                                            <Link className="font-f-3" href="tel:+905438624751">+90 543 862 47 51</Link>
+                                            <Link className="font-f-3" href="tel:+902163266000">0216 326 60 00</Link>
+                                            <Link className="font-f-3" href="tel:+905432599784">+90 543 259 97 84</Link>
                                         </div>
                                     </div>
                                 </div>
