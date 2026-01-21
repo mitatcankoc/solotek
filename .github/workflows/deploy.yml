@@ -47,8 +47,8 @@ jobs:
 
       - name: Install dependencies on server
         run: |
-          ssh -p 65002 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no u136381340@46.202.157.202 "cd /home/u136381340/domains/soloteknoloji.tr/public_html && npm ci --production"
+          ssh -p 65002 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no u136381340@46.202.157.202 "source ~/.nvm/nvm.sh && cd /home/u136381340/domains/soloteknoloji.tr/public_html && npm ci --production"
 
       - name: Restart Next.js
         run: |
-          ssh -p 65002 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no u136381340@46.202.157.202 "cd /home/u136381340/domains/soloteknoloji.tr/public_html && pm2 restart solo || pm2 start npm --name solo -- start"
+          ssh -p 65002 -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no u136381340@46.202.157.202 "source ~/.nvm/nvm.sh && cd /home/u136381340/domains/soloteknoloji.tr/public_html && pm2 restart solo || pm2 start npm --name solo -- start"
