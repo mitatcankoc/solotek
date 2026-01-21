@@ -80,10 +80,7 @@ export default function Page() {
                                             uygunluğunu test edin.
                                         </p>
                                         <div className="demo-features" style={{ marginTop: '30px' }}>
-                                            <div className="demo-feature-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                                                <i className="fa-solid fa-check-circle" style={{ color: '#21BB9F', marginRight: '12px', fontSize: '20px' }}></i>
-                                                <span style={{ color: '#fff' }}>Tamamen ücretsiz demo</span>
-                                            </div>
+
                                             <div className="demo-feature-item" style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
                                                 <i className="fa-solid fa-check-circle" style={{ color: '#21BB9F', marginRight: '12px', fontSize: '20px' }}></i>
                                                 <span style={{ color: '#fff' }}>Uzman ekip eşliğinde sunum</span>
