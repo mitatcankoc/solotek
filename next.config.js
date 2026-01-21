@@ -1,14 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // LiteSpeed ile uyumluluk icin compression kapatalim (sunucu kendi yapsin)
+    compress: false,
+
+    // Build ID'yi Next.js'in otomatik yonetmesine izin ver (Date.now() sorun yaratiyor)
+    // generateBuildId kaldirildi -> default hash kullanilacak
+
     experimental: {
         serverActions: {
             bodySizeLimit: '2mb',
         },
-    },
-
-    // Her build'de benzersiz ID olustur
-    generateBuildId: async () => {
-        return `build-${Date.now()}`;
     },
 
     // Cache header'lari
