@@ -1,26 +1,31 @@
-RewriteEngine On
-
-# Ana sayfa icin ZORUNLU cache bypass - her istekte yeni HTML
-RewriteCond %{REQUEST_URI} ^/$
-RewriteCond %{QUERY_STRING} ^$
-RewriteRule ^$ /?_nocache=%{TIME} [R=302,L]
-
-# LiteSpeed Cache - TAMAMEN kapat
-<IfModule LiteSpeed>
-CacheDisable public /
-CacheLookup off
-</IfModule>
-
-# Headers - Cache KAPAT
-<IfModule mod_headers.c>
-Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
-Header always set Pragma "no-cache"
-Header always set Expires "Thu, 01 Jan 1970 00:00:00 GMT"
-</IfModule>
-
 # Passenger Node.js Config
 PassengerAppRoot /home/u136381340/domains/soloteknoloji.tr/public_html
 PassengerAppType node
 PassengerStartupFile server.js
 PassengerNodejs /opt/alt/alt-nodejs22/root/bin/node
 PassengerBaseURI /
+
+# LiteSpeed Cache - HTML icin KISA cache (5 dakika), static icin UZUN cache
+<IfModule LiteSpeed>
+# HTML sayfalar 5 dakika cache (deployment sonrasi max 5dk icinde guncellenir)
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/_next/static/
+RewriteRule .* - [E=Cache-Control:max-age=300]
+
+# Static assets (JS/CSS/images) 1 yil cache (hash'li oldugu icin guvenli)
+RewriteCond %{REQUEST_URI} ^/_next/static/
+RewriteRule .* - [E=Cache-Control:max-age=31536000,immutable]
+</IfModule>
+
+# Headers
+<IfModule mod_headers.c>
+# HTML pages - short cache
+<FilesMatch "\.(html)$">
+Header set Cache-Control "public, max-age=300, must-revalidate"
+</FilesMatch>
+
+# Static chunks - long cache (immutable = hash-based)
+<FilesMatch "\.(js|css)$">
+Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+</IfModule>
