@@ -1,22 +1,39 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
-// GET - Tüm markaları getir
+// GET - Tüm markaları getir (veya kategoriye göre filtrele)
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const kategoriId = searchParams.get('kategori');
 
-        let query = `
-            SELECT m.*, COUNT(DISTINCT u.id) as urun_sayisi
-            FROM markalar m
-            LEFT JOIN urunler u ON m.id = u.marka_id
-            WHERE m.aktif = 1
-            GROUP BY m.id
-            ORDER BY m.sira ASC, m.ad ASC
-        `;
+        let query;
+        let params = [];
 
-        const [rows] = await pool.query(query);
+        if (kategoriId) {
+            // Sadece bu kategoride ürün olan markaları getir
+            query = `
+                SELECT m.*, COUNT(DISTINCT u.id) as urun_sayisi
+                FROM markalar m
+                INNER JOIN urunler u ON m.id = u.marka_id
+                WHERE m.aktif = 1 AND u.aktif = 1 AND u.kategori_id = ?
+                GROUP BY m.id
+                ORDER BY m.sira ASC, m.ad ASC
+            `;
+            params = [kategoriId];
+        } else {
+            // Tüm aktif markaları getir
+            query = `
+                SELECT m.*, COUNT(DISTINCT u.id) as urun_sayisi
+                FROM markalar m
+                LEFT JOIN urunler u ON m.id = u.marka_id
+                WHERE m.aktif = 1
+                GROUP BY m.id
+                ORDER BY m.sira ASC, m.ad ASC
+            `;
+        }
+
+        const [rows] = await pool.query(query, params);
 
         // Admin panel uyumluluğu için alias ekle
         const result = rows.map(row => ({
