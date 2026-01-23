@@ -12,6 +12,7 @@ export default function SuruculerPage() {
     const [filteredSuruculer, setFilteredSuruculer] = useState({})
     const [selectedKategori, setSelectedKategori] = useState(null)
     const [selectedMarka, setSelectedMarka] = useState(null)
+    const [filteredMarkalar, setFilteredMarkalar] = useState([])
 
     useEffect(() => {
         fetchData()
@@ -20,6 +21,23 @@ export default function SuruculerPage() {
     useEffect(() => {
         filterSuruculer()
     }, [searchTerm, suruculer, selectedKategori, selectedMarka])
+
+    // Kategori seçildiğinde, sadece o kategoride sürücü olan markaları filtrele
+    useEffect(() => {
+        if (selectedKategori) {
+            // Bu kategoride sürücü olan markaları bul
+            const markaIdsInCategory = [...new Set(
+                suruculer
+                    .filter(s => s.kategori_id == selectedKategori.id)
+                    .map(s => s.marka_id)
+                    .filter(id => id)
+            )]
+            const filtered = markalar.filter(m => markaIdsInCategory.includes(m.id))
+            setFilteredMarkalar(filtered)
+        } else {
+            setFilteredMarkalar([])
+        }
+    }, [selectedKategori, suruculer, markalar])
 
     const fetchData = async () => {
         try {
@@ -40,21 +58,33 @@ export default function SuruculerPage() {
     }
 
     const filterSuruculer = () => {
-        let filtered = suruculer
+        let filtered = [...suruculer]
 
+        // Arama filtresi
         if (searchTerm) {
-            filtered = suruculer.filter(s =>
-                s.urun_adi.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                s.surucu_adi.toLowerCase().includes(searchTerm.toLowerCase())
+            filtered = filtered.filter(s =>
+                (s.urun_adi || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (s.surucu_adi || '').toLowerCase().includes(searchTerm.toLowerCase())
             )
+        }
+
+        // Kategori filtresi
+        if (selectedKategori) {
+            filtered = filtered.filter(s => s.kategori_id == selectedKategori.id)
+        }
+
+        // Marka filtresi
+        if (selectedMarka) {
+            filtered = filtered.filter(s => s.marka_id == selectedMarka.id)
         }
 
         // Ürün adına göre grupla
         const grouped = filtered.reduce((acc, surucu) => {
-            if (!acc[surucu.urun_adi]) {
-                acc[surucu.urun_adi] = []
+            const key = surucu.urun_adi || 'Diğer'
+            if (!acc[key]) {
+                acc[key] = []
             }
-            acc[surucu.urun_adi].push(surucu)
+            acc[key].push(surucu)
             return acc
         }, {})
 
@@ -62,14 +92,11 @@ export default function SuruculerPage() {
     }
 
     const handleDownload = async (surucu) => {
-        // İndirme sayısını artır
         try {
             await fetch(`/api/suruculer/${surucu.id}`, { method: 'PATCH' })
         } catch (err) {
             console.error('Sayaç güncelenemedi')
         }
-
-        // Dosyayı indir
         window.open(surucu.dosya_url, '_blank')
     }
 
@@ -186,14 +213,10 @@ export default function SuruculerPage() {
                                     <div style={{
                                         display: 'flex',
                                         gap: '10px',
-                                        justifyContent: 'flex-start',
+                                        justifyContent: 'center',
                                         alignItems: 'center',
-                                        overflowX: 'auto',
-                                        paddingBottom: '10px',
-                                        WebkitOverflowScrolling: 'touch',
-                                        scrollbarWidth: 'none',
-                                        msOverflowStyle: 'none'
-                                    }} className="hide-scrollbar">
+                                        flexWrap: 'wrap'
+                                    }} className="kategori-buttons">
                                         {/* Tümü Butonu */}
                                         <button
                                             onClick={() => { setSelectedKategori(null); setSelectedMarka(null); }}
@@ -263,7 +286,7 @@ export default function SuruculerPage() {
                                                 <i className="fa-solid fa-filter" style={{ marginRight: '6px' }}></i>
                                                 Marka:
                                             </span>
-                                            {markalar.filter(m => m.aktif).map(marka => (
+                                            {filteredMarkalar.length > 0 ? filteredMarkalar.map(marka => (
                                                 <button
                                                     key={marka.id}
                                                     onClick={() => handleMarkaSelect(marka)}
@@ -281,9 +304,11 @@ export default function SuruculerPage() {
                                                         flexShrink: 0
                                                     }}
                                                 >
-                                                    {marka.ad}
+                                                    {marka.ad || marka.name}
                                                 </button>
-                                            ))}
+                                            )) : (
+                                                <span style={{ color: '#999', fontSize: '13px' }}>Bu kategoride marka bulunamadı</span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
