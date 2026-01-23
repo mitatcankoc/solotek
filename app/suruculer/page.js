@@ -185,11 +185,15 @@ export default function SuruculerPage() {
                                 <div className="col-12">
                                     <div style={{
                                         display: 'flex',
-                                        flexWrap: 'wrap',
                                         gap: '10px',
-                                        justifyContent: 'center',
-                                        alignItems: 'center'
-                                    }}>
+                                        justifyContent: 'flex-start',
+                                        alignItems: 'center',
+                                        overflowX: 'auto',
+                                        paddingBottom: '10px',
+                                        WebkitOverflowScrolling: 'touch',
+                                        scrollbarWidth: 'none',
+                                        msOverflowStyle: 'none'
+                                    }} className="hide-scrollbar">
                                         {/* Tümü Butonu */}
                                         <button
                                             onClick={() => { setSelectedKategori(null); setSelectedMarka(null); }}
@@ -203,7 +207,9 @@ export default function SuruculerPage() {
                                                 fontSize: '14px',
                                                 cursor: 'pointer',
                                                 boxShadow: !selectedKategori ? '0 4px 15px rgba(33, 187, 159, 0.3)' : '0 2px 10px rgba(0,0,0,0.08)',
-                                                transition: 'all 0.3s ease'
+                                                transition: 'all 0.3s ease',
+                                                whiteSpace: 'nowrap',
+                                                flexShrink: 0
                                             }}
                                         >
                                             Tümü
@@ -224,7 +230,9 @@ export default function SuruculerPage() {
                                                     fontSize: '14px',
                                                     cursor: 'pointer',
                                                     boxShadow: selectedKategori?.id === kategori.id ? '0 4px 15px rgba(33, 187, 159, 0.3)' : '0 2px 10px rgba(0,0,0,0.08)',
-                                                    transition: 'all 0.3s ease'
+                                                    transition: 'all 0.3s ease',
+                                                    whiteSpace: 'nowrap',
+                                                    flexShrink: 0
                                                 }}
                                             >
                                                 {kategori.ad}
@@ -240,18 +248,20 @@ export default function SuruculerPage() {
                                     <div className="col-12">
                                         <div style={{
                                             display: 'flex',
-                                            flexWrap: 'wrap',
                                             gap: '10px',
-                                            justifyContent: 'center',
                                             alignItems: 'center',
-                                            padding: '20px',
+                                            padding: '15px 20px',
                                             background: '#fff',
                                             borderRadius: '16px',
-                                            boxShadow: '0 2px 15px rgba(0,0,0,0.05)'
-                                        }}>
-                                            <span style={{ color: '#666', fontSize: '14px', marginRight: '10px' }}>
+                                            boxShadow: '0 2px 15px rgba(0,0,0,0.05)',
+                                            overflowX: 'auto',
+                                            WebkitOverflowScrolling: 'touch',
+                                            scrollbarWidth: 'none',
+                                            msOverflowStyle: 'none'
+                                        }} className="hide-scrollbar">
+                                            <span style={{ color: '#666', fontSize: '14px', whiteSpace: 'nowrap', flexShrink: 0 }}>
                                                 <i className="fa-solid fa-filter" style={{ marginRight: '6px' }}></i>
-                                                Marka Seçin:
+                                                Marka:
                                             </span>
                                             {markalar.filter(m => m.aktif).map(marka => (
                                                 <button
@@ -266,7 +276,9 @@ export default function SuruculerPage() {
                                                         fontWeight: '500',
                                                         fontSize: '13px',
                                                         cursor: 'pointer',
-                                                        transition: 'all 0.3s ease'
+                                                        transition: 'all 0.3s ease',
+                                                        whiteSpace: 'nowrap',
+                                                        flexShrink: 0
                                                     }}
                                                 >
                                                     {marka.ad}
