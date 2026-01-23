@@ -576,6 +576,23 @@ export default function SuruculerPage() {
                         </div>
                     </div>
                 </div>
+
+                <style jsx>{`
+                    @media (max-width: 768px) {
+                        .kategori-buttons {
+                            flex-wrap: nowrap !important;
+                            justify-content: flex-start !important;
+                            overflow-x: auto !important;
+                            padding-bottom: 10px !important;
+                            -webkit-overflow-scrolling: touch;
+                            scrollbar-width: none;
+                            -ms-overflow-style: none;
+                        }
+                        .kategori-buttons::-webkit-scrollbar {
+                            display: none;
+                        }
+                    }
+                `}</style>
             </Layout >
         </>
     )

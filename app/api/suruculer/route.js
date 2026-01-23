@@ -39,7 +39,7 @@ export async function GET(request) {
         // Admin panel uyumluluğu için alias ekle
         const result = rows.map(row => ({
             ...row,
-            urun_adi: row.baslik || row.model || '',
+            urun_adi: row.model || '',
             surucu_adi: row.baslik || '',
             status: row.aktif ? 'Aktif' : 'Pasif'
         }));
