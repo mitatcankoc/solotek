@@ -5,25 +5,33 @@ import { useState, useEffect } from "react"
 
 export default function SuruculerPage() {
     const [suruculer, setSuruculer] = useState([])
+    const [kategoriler, setKategoriler] = useState([])
+    const [markalar, setMarkalar] = useState([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [filteredSuruculer, setFilteredSuruculer] = useState({})
+    const [selectedKategori, setSelectedKategori] = useState(null)
+    const [selectedMarka, setSelectedMarka] = useState(null)
 
     useEffect(() => {
-        fetchSuruculer()
+        fetchData()
     }, [])
 
     useEffect(() => {
         filterSuruculer()
-    }, [searchTerm, suruculer])
+    }, [searchTerm, suruculer, selectedKategori, selectedMarka])
 
-    const fetchSuruculer = async () => {
+    const fetchData = async () => {
         try {
-            const res = await fetch('/api/suruculer?status=Aktif')
-            if (res.ok) {
-                const data = await res.json()
-                setSuruculer(data)
-            }
+            const [suruculerRes, kategorilerRes, markalarRes] = await Promise.all([
+                fetch('/api/suruculer?status=Aktif'),
+                fetch('/api/kategoriler'),
+                fetch('/api/markalar')
+            ])
+
+            if (suruculerRes.ok) setSuruculer(await suruculerRes.json())
+            if (kategorilerRes.ok) setKategoriler(await kategorilerRes.json())
+            if (markalarRes.ok) setMarkalar(await markalarRes.json())
         } catch (error) {
             console.error('Hata:', error)
         } finally {
@@ -63,6 +71,26 @@ export default function SuruculerPage() {
 
         // Dosyayı indir
         window.open(surucu.dosya_url, '_blank')
+    }
+
+    // Kategori seçimi
+    const handleKategoriSelect = (kategori) => {
+        if (selectedKategori?.id === kategori?.id) {
+            setSelectedKategori(null)
+            setSelectedMarka(null)
+        } else {
+            setSelectedKategori(kategori)
+            setSelectedMarka(null)
+        }
+    }
+
+    // Marka seçimi
+    const handleMarkaSelect = (marka) => {
+        if (selectedMarka?.id === marka?.id) {
+            setSelectedMarka(null)
+        } else {
+            setSelectedMarka(marka)
+        }
     }
 
     // İşletim sistemine göre ikon döndür
@@ -107,11 +135,11 @@ export default function SuruculerPage() {
                         </div>
                     </div>
 
-                    {/* Arama ve Sürücü Listesi */}
+                    {/* Arama ve Filtreler */}
                     <div className="section-padding bg-28">
                         <div className="container">
                             {/* Arama Kutusu */}
-                            <div className="row" style={{ marginBottom: '40px' }}>
+                            <div className="row" style={{ marginBottom: '30px' }}>
                                 <div className="col-lg-6 m-auto">
                                     <div style={{
                                         background: '#fff',
@@ -151,6 +179,103 @@ export default function SuruculerPage() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Hizmet Verdiğimiz Ürünler - Kategori Filtreleri */}
+                            <div className="row" style={{ marginBottom: '20px' }}>
+                                <div className="col-12">
+                                    <div style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: '10px',
+                                        justifyContent: 'center',
+                                        alignItems: 'center'
+                                    }}>
+                                        {/* Tümü Butonu */}
+                                        <button
+                                            onClick={() => { setSelectedKategori(null); setSelectedMarka(null); }}
+                                            style={{
+                                                padding: '12px 28px',
+                                                borderRadius: '50px',
+                                                border: 'none',
+                                                background: !selectedKategori ? 'linear-gradient(135deg, #21BB9F 0%, #1aa38a 100%)' : '#fff',
+                                                color: !selectedKategori ? '#fff' : '#333',
+                                                fontWeight: '600',
+                                                fontSize: '14px',
+                                                cursor: 'pointer',
+                                                boxShadow: !selectedKategori ? '0 4px 15px rgba(33, 187, 159, 0.3)' : '0 2px 10px rgba(0,0,0,0.08)',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                        >
+                                            Tümü
+                                        </button>
+
+                                        {/* Kategori Butonları */}
+                                        {kategoriler.filter(k => k.aktif).map(kategori => (
+                                            <button
+                                                key={kategori.id}
+                                                onClick={() => handleKategoriSelect(kategori)}
+                                                style={{
+                                                    padding: '12px 24px',
+                                                    borderRadius: '50px',
+                                                    border: 'none',
+                                                    background: selectedKategori?.id === kategori.id ? 'linear-gradient(135deg, #21BB9F 0%, #1aa38a 100%)' : '#fff',
+                                                    color: selectedKategori?.id === kategori.id ? '#fff' : '#333',
+                                                    fontWeight: '500',
+                                                    fontSize: '14px',
+                                                    cursor: 'pointer',
+                                                    boxShadow: selectedKategori?.id === kategori.id ? '0 4px 15px rgba(33, 187, 159, 0.3)' : '0 2px 10px rgba(0,0,0,0.08)',
+                                                    transition: 'all 0.3s ease'
+                                                }}
+                                            >
+                                                {kategori.ad}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Marka Filtreleri - Sadece kategori seçiliyse göster */}
+                            {selectedKategori && (
+                                <div className="row" style={{ marginBottom: '30px' }}>
+                                    <div className="col-12">
+                                        <div style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '10px',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            padding: '20px',
+                                            background: '#fff',
+                                            borderRadius: '16px',
+                                            boxShadow: '0 2px 15px rgba(0,0,0,0.05)'
+                                        }}>
+                                            <span style={{ color: '#666', fontSize: '14px', marginRight: '10px' }}>
+                                                <i className="fa-solid fa-filter" style={{ marginRight: '6px' }}></i>
+                                                Marka Seçin:
+                                            </span>
+                                            {markalar.filter(m => m.aktif).map(marka => (
+                                                <button
+                                                    key={marka.id}
+                                                    onClick={() => handleMarkaSelect(marka)}
+                                                    style={{
+                                                        padding: '8px 20px',
+                                                        borderRadius: '20px',
+                                                        border: selectedMarka?.id === marka.id ? '2px solid #21BB9F' : '2px solid #e5e7eb',
+                                                        background: selectedMarka?.id === marka.id ? '#ecfdf5' : '#fff',
+                                                        color: selectedMarka?.id === marka.id ? '#21BB9F' : '#666',
+                                                        fontWeight: '500',
+                                                        fontSize: '13px',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.3s ease'
+                                                    }}
+                                                >
+                                                    {marka.ad}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Sürücü Listesi */}
                             {loading ? (
