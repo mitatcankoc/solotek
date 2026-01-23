@@ -1,21 +1,38 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
-// GET - Tüm sürücüleri getir (arama destekli)
+// GET - Tüm sürücüleri getir (arama ve filtre destekli)
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const search = searchParams.get('search');
+        const kategoriId = searchParams.get('kategori');
+        const markaId = searchParams.get('marka');
+        const status = searchParams.get('status');
 
-        let query = 'SELECT * FROM suruculer WHERE aktif = 1';
+        let query = 'SELECT s.*, k.ad as kategori_adi, m.ad as marka_adi FROM suruculer s LEFT JOIN kategoriler k ON s.kategori_id = k.id LEFT JOIN markalar m ON s.marka_id = m.id WHERE 1=1';
         const params = [];
 
+        if (status === 'Aktif') {
+            query += ' AND s.aktif = 1';
+        }
+
         if (search) {
-            query += ' AND (baslik LIKE ? OR aciklama LIKE ? OR model LIKE ?)';
+            query += ' AND (s.baslik LIKE ? OR s.aciklama LIKE ? OR s.model LIKE ?)';
             params.push(`%${search}%`, `%${search}%`, `%${search}%`);
         }
 
-        query += ' ORDER BY baslik ASC, created_at DESC';
+        if (kategoriId) {
+            query += ' AND s.kategori_id = ?';
+            params.push(kategoriId);
+        }
+
+        if (markaId) {
+            query += ' AND s.marka_id = ?';
+            params.push(markaId);
+        }
+
+        query += ' ORDER BY s.baslik ASC, s.created_at DESC';
 
         const [rows] = await pool.query(query, params);
 
@@ -51,11 +68,13 @@ export async function POST(request) {
         const dosya_url = data.dosya_url;
         const dosya_boyutu = data.dosya_boyutu;
         const aktif = data.status === 'Aktif' || data.aktif === 1 || data.aktif === true ? 1 : 0;
+        const kategori_id = data.kategori_id || null;
+        const marka_id = data.marka_id || null;
 
         const [result] = await pool.query(
-            `INSERT INTO suruculer (baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif === 0 ? 0 : 1]
+            `INSERT INTO suruculer (baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif, kategori_id, marka_id) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif === 0 ? 0 : 1, kategori_id, marka_id]
         );
 
         return NextResponse.json({

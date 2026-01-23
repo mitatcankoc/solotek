@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 
 export default function AdminSuruculer() {
     const [suruculer, setSuruculer] = useState([])
+    const [kategoriler, setKategoriler] = useState([])
+    const [markalar, setMarkalar] = useState([])
     const [loading, setLoading] = useState(true)
     const [showModal, setShowModal] = useState(false)
     const [editingId, setEditingId] = useState(null)
@@ -18,17 +20,25 @@ export default function AdminSuruculer() {
         versiyon: '',
         isletim_sistemi: 'Windows 10/11',
         aciklama: '',
-        status: 'Aktif'
+        status: 'Aktif',
+        kategori_id: '',
+        marka_id: ''
     })
 
     useEffect(() => {
-        fetchSuruculer()
+        fetchData()
     }, [])
 
-    const fetchSuruculer = async () => {
+    const fetchData = async () => {
         try {
-            const res = await fetch('/api/suruculer')
-            if (res.ok) setSuruculer(await res.json())
+            const [suruculerRes, kategorilerRes, markalarRes] = await Promise.all([
+                fetch('/api/suruculer'),
+                fetch('/api/kategoriler'),
+                fetch('/api/markalar')
+            ])
+            if (suruculerRes.ok) setSuruculer(await suruculerRes.json())
+            if (kategorilerRes.ok) setKategoriler(await kategorilerRes.json())
+            if (markalarRes.ok) setMarkalar(await markalarRes.json())
         } catch (error) {
             console.error('Hata:', error)
         } finally {
@@ -94,7 +104,7 @@ export default function AdminSuruculer() {
             })
 
             if (res.ok) {
-                fetchSuruculer()
+                fetchData()
                 closeModal()
             } else {
                 alert('İşlem başarısız')
@@ -114,7 +124,9 @@ export default function AdminSuruculer() {
             versiyon: surucu.versiyon || '',
             isletim_sistemi: surucu.isletim_sistemi || 'Windows 10/11',
             aciklama: surucu.aciklama || '',
-            status: surucu.status
+            status: surucu.status,
+            kategori_id: surucu.kategori_id || '',
+            marka_id: surucu.marka_id || ''
         })
         setShowModal(true)
     }
@@ -123,7 +135,7 @@ export default function AdminSuruculer() {
         if (confirm('Bu sürücüyü silmek istediğinize emin misiniz?')) {
             try {
                 const res = await fetch(`/api/suruculer/${id}`, { method: 'DELETE' })
-                if (res.ok) fetchSuruculer()
+                if (res.ok) fetchData()
             } catch (error) {
                 alert('Silme işlemi başarısız')
             }
@@ -141,7 +153,9 @@ export default function AdminSuruculer() {
             versiyon: '',
             isletim_sistemi: 'Windows 10/11',
             aciklama: '',
-            status: 'Aktif'
+            status: 'Aktif',
+            kategori_id: '',
+            marka_id: ''
         })
     }
 
@@ -340,6 +354,29 @@ export default function AdminSuruculer() {
                                 <input type="text" name="surucu_adi" value={formData.surucu_adi} onChange={handleChange} required
                                     style={{ width: '100%', padding: '12px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none' }}
                                     placeholder="Örn: USB Driver" />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>Kategori</label>
+                                    <select name="kategori_id" value={formData.kategori_id} onChange={handleChange}
+                                        style={{ width: '100%', padding: '12px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none' }}>
+                                        <option value="">Seçiniz</option>
+                                        {kategoriler.map(kat => (
+                                            <option key={kat.id} value={kat.id}>{kat.name || kat.ad}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>Marka</label>
+                                    <select name="marka_id" value={formData.marka_id} onChange={handleChange}
+                                        style={{ width: '100%', padding: '12px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none' }}>
+                                        <option value="">Seçiniz</option>
+                                        {markalar.map(marka => (
+                                            <option key={marka.id} value={marka.id}>{marka.name || marka.ad}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>

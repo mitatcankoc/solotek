@@ -45,13 +45,15 @@ export async function PUT(request, { params }) {
         const dosya_url = data.dosya_url;
         const dosya_boyutu = data.dosya_boyutu;
         const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
+        const kategori_id = data.kategori_id || null;
+        const marka_id = data.marka_id || null;
 
         await pool.query(
             `UPDATE suruculer SET 
                 baslik = ?, model = ?, aciklama = ?, versiyon = ?, isletim_sistemi = ?, 
-                dosya_url = ?, dosya_boyutu = ?, aktif = ?
+                dosya_url = ?, dosya_boyutu = ?, aktif = ?, kategori_id = ?, marka_id = ?
              WHERE id = ?`,
-            [baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif, id]
+            [baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif, kategori_id, marka_id, id]
         );
 
         return NextResponse.json({ message: 'Sürücü güncellendi' });
