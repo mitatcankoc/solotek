@@ -95,7 +95,8 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
                 top: 0,
                 left: 0,
                 right: 0,
-                zIndex: 1001
+                zIndex: 1001,
+                display: isMobileMenu ? 'none' : 'block'
             }}>
                 <a href="tel:+902163266000" style={{ color: '#fff', fontWeight: '700', textDecoration: 'none', fontSize: '14px' }}>
                     <i className="fa-solid fa-phone" style={{ marginRight: '5px' }}></i>
