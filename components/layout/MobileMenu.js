@@ -67,14 +67,13 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
 
     return (
         <>
-            <div className="d-lg-none" style={{ backgroundColor: '#21BB9F', padding: '10px 15px', color: '#fff', fontSize: '12px', textAlign: 'center', lineHeight: '1.4' }}>
-                <span style={{ display: 'block', marginBottom: '2px' }}>Tüm Barkod İhtiyaçlarınız için Hemen Arayabilirsiniz:</span>
-                <a href="tel:+902163266000" style={{ color: '#fff', fontWeight: '700', textDecoration: 'none', fontSize: '14px' }}>
-                    <i className="fa-solid fa-phone" style={{ marginRight: '5px' }}></i>
-                    0216 326 60 00
-                </a>
-            </div>
             <div className={getHeaderClass()}>
+                <div style={{ backgroundColor: '#21BB9F', padding: '5px 0', textAlign: 'center' }}>
+                    <a href="tel:+902163266000" style={{ color: '#fff', fontWeight: '700', textDecoration: 'none', fontSize: '14px' }}>
+                        <i className="fa-solid fa-phone" style={{ marginRight: '5px' }}></i>
+                        0216 326 60 00
+                    </a>
+                </div>
                 <div className="container-fluid">
                     <div className="col-12">
                         <div className="mobile-header-elements">
