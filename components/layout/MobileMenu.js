@@ -26,7 +26,7 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
     useEffect(() => {
         const addMobilePadding = () => {
             if (window.innerWidth < 992) { // lg breakpoint
-                document.body.style.paddingTop = '75px'; // Green bar + header height
+                document.body.style.paddingTop = '90px'; // Green bar + header height
             } else {
                 document.body.style.paddingTop = '0';
             }
@@ -102,7 +102,7 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
                     0216 326 60 00
                 </a>
             </div>
-            <div className={getHeaderClass()} style={{ marginTop: '38px' }}>
+            <div className={getHeaderClass()} style={{ top: '32px' }}>
                 <div className="container-fluid">
                     <div className="col-12">
                         <div className="mobile-header-elements">
