@@ -65,15 +65,25 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
         return baseClass;
     };
 
+
     return (
         <>
-            <div className={getHeaderClass()}>
-                <div style={{ backgroundColor: '#21BB9F', padding: '5px 0', textAlign: 'center' }}>
-                    <a href="tel:+902163266000" style={{ color: '#fff', fontWeight: '700', textDecoration: 'none', fontSize: '14px' }}>
-                        <i className="fa-solid fa-phone" style={{ marginRight: '5px' }}></i>
-                        0216 326 60 00
-                    </a>
-                </div>
+            <div className="d-lg-none" style={{
+                backgroundColor: '#21BB9F',
+                padding: '8px 0',
+                textAlign: 'center',
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1001
+            }}>
+                <a href="tel:+902163266000" style={{ color: '#fff', fontWeight: '700', textDecoration: 'none', fontSize: '14px' }}>
+                    <i className="fa-solid fa-phone" style={{ marginRight: '5px' }}></i>
+                    0216 326 60 00
+                </a>
+            </div>
+            <div className={getHeaderClass()} style={{ marginTop: '38px' }}>
                 <div className="container-fluid">
                     <div className="col-12">
                         <div className="mobile-header-elements">
