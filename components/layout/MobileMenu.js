@@ -22,6 +22,25 @@ export default function MobileMenu({ isMobileMenu, handleMobileMenu, scrollDirec
         };
     }, [isMobileMenu]);
 
+    // Mobil cihazlarda body'ye padding ekle
+    useEffect(() => {
+        const addMobilePadding = () => {
+            if (window.innerWidth < 992) { // lg breakpoint
+                document.body.style.paddingTop = '100px'; // Green bar + header height
+            } else {
+                document.body.style.paddingTop = '0';
+            }
+        };
+
+        addMobilePadding();
+        window.addEventListener('resize', addMobilePadding);
+
+        return () => {
+            window.removeEventListener('resize', addMobilePadding);
+            document.body.style.paddingTop = '0';
+        };
+    }, []);
+
     // Kategorileri API'den çek
     useEffect(() => {
         const fetchKategoriler = async () => {
