@@ -12,7 +12,7 @@ import "@/public/assets/css/master.css";
 import "@/public/assets/css/h4-master.css";
 
 export const metadata = {
-    metadataBase: new URL('https://solo.mcankoc.com.tr'),
+    metadataBase: new URL('https://soloteknoloji.tr'),
     alternates: {
         canonical: './',
     },

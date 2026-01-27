@@ -1,5 +1,5 @@
 export default function sitemap() {
-    const baseUrl = 'https://soloteknoloji.com.tr'
+    const baseUrl = 'https://soloteknoloji.tr'
 
     // Statik sayfalar
     const staticPages = [
