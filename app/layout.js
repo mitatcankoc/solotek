@@ -30,6 +30,7 @@ export default function RootLayout({ children }) {
         <html lang="tr" id="#top" translate="no" suppressHydrationWarning>
             <head>
                 <meta name="google" content="notranslate" />
+                <meta name="google-site-verification" content="UfFYKUqPNXJfJf65qIdWiQ3qXVt2HW5llvBY8Euyn5E" />
             </head>
             <body suppressHydrationWarning>{children}</body>
         </html>
