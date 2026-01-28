@@ -14,6 +14,29 @@ export default function Page() {
     const [sending, setSending] = useState(false)
     const [sent, setSent] = useState(false)
     const [error, setError] = useState(null)
+    const [settings, setSettings] = useState({})
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/ayarlar')
+                if (res.ok) {
+                    const data = await res.json()
+                    const s = {}
+                    data.forEach(item => s[item.anahtar] = item.deger)
+                    setSettings(s)
+                }
+            } catch (error) {
+                console.error('Ayarlar yüklenemedi:', error)
+            }
+        }
+        fetchSettings()
+    }, [])
+
+    const whatsappNumber = settings.whatsapp ? settings.whatsapp.replace(/[^0-9]/g, '') : '905432599784'
+    const whatsappDisplay = settings.whatsapp || '+90 543 259 97 84'
+    const whatsappMessage = settings.whatsapp_message ? encodeURIComponent(settings.whatsapp_message) : ''
+    const whatsappLink = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`
 
     const handleChange = (e) => {
         const { name, value } = e.target
@@ -116,7 +139,7 @@ export default function Page() {
                                             </div>
                                             <div style={{ marginBottom: '15px' }}>
                                                 <i className="fa-brands fa-whatsapp" style={{ color: '#21BB9F', marginRight: '10px' }}></i>
-                                                <Link href="https://wa.me/905438624751" target="_blank">WhatsApp ile İletişim</Link>
+                                                <Link href={whatsappLink} target="_blank">WhatsApp ile İletişim</Link>
                                             </div>
                                         </div>
                                     </div>
@@ -317,7 +340,7 @@ export default function Page() {
                                         </div>
                                     </div>
                                     <div className="col-md-6 text-md-right">
-                                        <Link href="https://wa.me/905438624751" target="_blank" className="theme-btn-11">WhatsApp ile Yazın</Link>
+                                        <Link href={whatsappLink} target="_blank" className="theme-btn-11">WhatsApp ile Yazın</Link>
                                     </div>
                                 </div>
                             </div>

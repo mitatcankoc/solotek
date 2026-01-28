@@ -59,6 +59,27 @@ export default function Layout({ headerStyle, footerStyle, headTitle, metaDescri
             document.removeEventListener("scroll", handleScroll)
         }
     }, [lastScrollY, scroll])
+
+    // Site ayarlarını çek
+    const [siteSettings, setSiteSettings] = useState({})
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await fetch('/api/ayarlar');
+                if (res.ok) {
+                    const data = await res.json();
+                    const settingsMap = {};
+                    data.forEach(item => {
+                        settingsMap[item.anahtar] = item.deger;
+                    });
+                    setSiteSettings(settingsMap);
+                }
+            } catch (error) {
+                console.error('Ayarlar yüklenemedi:', error);
+            }
+        };
+        fetchSettings();
+    }, []);
     return (
         <div className={isInnerPage ? 'inner-page' : ''}>
             <PageHead headTitle={headTitle} metaDescription={metaDescription} metaKeywords={metaKeywords} />
@@ -95,7 +116,7 @@ export default function Layout({ headerStyle, footerStyle, headTitle, metaDescri
 
             <DemoSidebar />
 
-            <BackToTop scroll={scroll} />
+            <BackToTop scroll={scroll} settings={siteSettings} />
         </div>
     )
 }
