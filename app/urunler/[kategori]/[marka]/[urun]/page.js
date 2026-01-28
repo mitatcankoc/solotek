@@ -338,7 +338,7 @@ export default function ProductDetailPage() {
                                                                 >
                                                                     <img
                                                                         src={img}
-                                                                        alt=""
+                                                                        alt={`${urunData.name} - ${index + 1}`}
                                                                         style={{
                                                                             width: '100%',
                                                                             height: '100%',
