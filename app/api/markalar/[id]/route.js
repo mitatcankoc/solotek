@@ -1,10 +1,40 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
+// Marka kategorileri tablosunu oluştur (Helper function)
+async function ensureTableExists() {
+    // 1. Tabloyu oluştur
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS marka_kategorileri (
+            marka_id INT NOT NULL,
+            kategori_id INT NOT NULL,
+            PRIMARY KEY (marka_id, kategori_id),
+            FOREIGN KEY (marka_id) REFERENCES markalar(id) ON DELETE CASCADE,
+            FOREIGN KEY (kategori_id) REFERENCES kategoriler(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // 2. Veri Migrasyonu: Tablo boşsa, mevcut ürünlerden ilişkileri doldur
+    // Bu sayede mevcut ürünlerin marka-kategori ilişkileri kaybolmaz
+    const [count] = await pool.query('SELECT COUNT(*) as count FROM marka_kategorileri');
+    if (count[0].count === 0) {
+        await pool.query(`
+            INSERT IGNORE INTO marka_kategorileri (marka_id, kategori_id)
+            SELECT DISTINCT marka_id, kategori_id 
+            FROM urunler 
+            WHERE marka_id IS NOT NULL AND kategori_id IS NOT NULL
+        `);
+        console.log('Marka-Kategori ilişkileri ürünlerden otomatik oluşturuldu.');
+    }
+}
+
 // GET - Tek marka getir
 export async function GET(request, context) {
     try {
         const { id } = await context.params;
+
+        // Tablo kontrolü yap
+        await ensureTableExists();
 
         // Önce slug ile ara, bulamazsan id ile ara
         let [rows] = await pool.query('SELECT * FROM markalar WHERE slug = ?', [id]);
@@ -17,13 +47,26 @@ export async function GET(request, context) {
             return NextResponse.json({ error: 'Marka bulunamadı' }, { status: 404 });
         }
 
-        // Bu markanın kategorilerini ürünler üzerinden getir
-        const [kategoriler] = await pool.query(`
-            SELECT DISTINCT k.*, k.ad as name FROM kategoriler k
-            INNER JOIN urunler u ON k.id = u.kategori_id
-            WHERE u.marka_id = ? AND k.aktif = 1
-            ORDER BY k.sira ASC, k.ad ASC
-        `, [rows[0].id]);
+        const markaId = rows[0].id;
+
+        // Önce ilişkili tablodan kategorileri çek
+        let [kategoriler] = await pool.query(`
+            SELECT k.*, k.ad as name 
+            FROM kategoriler k
+            INNER JOIN marka_kategorileri mk ON k.id = mk.kategori_id
+            WHERE mk.marka_id = ?
+        `, [markaId]);
+
+        // Eğer ilişki tablosunda kayıt yoksa, eski yöntemle (ürünler üzerinden) çekip kullanıcıya göster
+        // Böylece veri kaybı görünmez, kullanıcı kaydettiğinde yeni tabloya geçer
+        if (kategoriler.length === 0) {
+            [kategoriler] = await pool.query(`
+                SELECT DISTINCT k.*, k.ad as name FROM kategoriler k
+                INNER JOIN urunler u ON k.id = u.kategori_id
+                WHERE u.marka_id = ? AND k.aktif = 1
+                ORDER BY k.sira ASC, k.ad ASC
+            `, [markaId]);
+        }
 
         // Admin panel uyumluluğu için alias ekle
         const marka = {
@@ -52,6 +95,9 @@ export async function PUT(request, context) {
         const { id } = await context.params;
         const data = await request.json();
 
+        // Tablo kontrolü yap
+        await ensureTableExists();
+
         // Admin panel ve database uyumluluğu
         const ad = data.ad || data.name;
         const slug = data.slug;
@@ -60,11 +106,25 @@ export async function PUT(request, context) {
         const website = data.website;
         const aktif = data.status === 'Aktif' || data.aktif === 1 ? 1 : (data.status === 'Pasif' ? 0 : 1);
         const sira = data.sira || data.sort_order || 0;
+        const kategoriler = data.kategoriler || []; // Kategori ID listesi
 
         await pool.query(
             'UPDATE markalar SET ad=?, slug=?, logo=?, aciklama=?, website=?, aktif=?, sira=? WHERE id=?',
             [ad, slug, logo, aciklama, website, aktif, sira, id]
         );
+
+        // Kategorileri güncelle (Sil ve yeniden ekle)
+        // 1. Mevcut ilişkileri sil
+        await pool.query('DELETE FROM marka_kategorileri WHERE marka_id = ?', [id]);
+
+        // 2. Yeni ilişkileri ekle
+        if (kategoriler.length > 0) {
+            const values = kategoriler.map(kategoriId => [id, kategoriId]);
+            await pool.query(
+                'INSERT INTO marka_kategorileri (marka_id, kategori_id) VALUES ?',
+                [values]
+            );
+        }
 
         return NextResponse.json({ message: 'Marka başarıyla güncellendi' });
     } catch (error) {
