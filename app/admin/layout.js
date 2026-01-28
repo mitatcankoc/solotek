@@ -104,6 +104,7 @@ function AdminContent({ children }) {
         },
         { href: '/admin/mesajlar', label: 'İletişim Mesajları', icon: 'fa-envelope' },
         { href: '/admin/demo-talepleri', label: 'Demo Talepleri', icon: 'fa-calendar-check' },
+        { href: '/admin/ayarlar', label: 'Site Ayarları', icon: 'fa-gear' },
     ]
 
     const isActive = (href, exact) => {
