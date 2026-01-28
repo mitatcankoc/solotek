@@ -2,8 +2,31 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
 // GET - Tüm markaları getir (veya kategoriye göre filtrele)
+// GET - Tüm markaları getir (veya kategoriye göre filtrele)
 export async function GET(request) {
     try {
+        // İlişki tablosunu oluştur ve migrasyonu yap (Helper mantığı burada da çalışsın)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS marka_kategorileri (
+                marka_id INT NOT NULL,
+                kategori_id INT NOT NULL,
+                PRIMARY KEY (marka_id, kategori_id),
+                FOREIGN KEY (marka_id) REFERENCES markalar(id) ON DELETE CASCADE,
+                FOREIGN KEY (kategori_id) REFERENCES kategoriler(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        `);
+
+        // Veri Migrasyonu: Tablo boşsa, mevcut ürünlerden ilişkileri doldur
+        const [count] = await pool.query('SELECT COUNT(*) as count FROM marka_kategorileri');
+        if (count[0].count === 0) {
+            await pool.query(`
+                INSERT IGNORE INTO marka_kategorileri (marka_id, kategori_id)
+                SELECT DISTINCT marka_id, kategori_id 
+                FROM urunler 
+                WHERE marka_id IS NOT NULL AND kategori_id IS NOT NULL
+            `);
+        }
+
         const { searchParams } = new URL(request.url);
         const kategoriId = searchParams.get('kategori');
 
@@ -11,16 +34,19 @@ export async function GET(request) {
         let params = [];
 
         if (kategoriId) {
-            // Sadece bu kategoride ürün olan markaları getir
+            // Sadece bu kategoriye atanmış markaları getir
+            // Hem yeni sistemden (marka_kategorileri) hem de eski sistemden (ürünler) gelenleri birleştir (UNION)
+            // Böylece geçiş sürecinde veri kaybı olmaz
             query = `
-                SELECT m.*, COUNT(DISTINCT u.id) as urun_sayisi
+                SELECT DISTINCT m.*, (SELECT COUNT(DISTINCT u.id) FROM urunler u WHERE u.marka_id = m.id AND u.aktif = 1) as urun_sayisi
                 FROM markalar m
-                INNER JOIN urunler u ON m.id = u.marka_id
-                WHERE m.aktif = 1 AND u.aktif = 1 AND u.kategori_id = ?
-                GROUP BY m.id
+                LEFT JOIN marka_kategorileri mk ON m.id = mk.marka_id
+                LEFT JOIN urunler u ON m.id = u.marka_id
+                WHERE m.aktif = 1 
+                AND (mk.kategori_id = ? OR (u.kategori_id = ? AND u.aktif = 1))
                 ORDER BY m.sira ASC, m.ad ASC
             `;
-            params = [kategoriId];
+            params = [kategoriId, kategoriId];
         } else {
             // Tüm aktif markaları getir
             query = `
