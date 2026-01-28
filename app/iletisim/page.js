@@ -1,7 +1,7 @@
 'use client'
 import Layout from "@/components/layout/Layout"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function Page() {
     const [formData, setFormData] = useState({
