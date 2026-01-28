@@ -59,12 +59,24 @@ export async function POST(request) {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
+        const slug = formData.get('slug');
+
         // Dosya adını düzenle
         const originalName = file.name;
         const extension = path.extname(originalName).toLowerCase();
         const timestamp = Date.now();
-        const randomStr = Math.random().toString(36).substring(2, 8);
-        const fileName = `${type}_${timestamp}_${randomStr}${extension}`;
+
+        let fileName;
+        if (slug) {
+            // Slug varsa onu kullan: slug_timestamp.ext
+            // Slug içindeki geçersiz karakterleri temizle (ekstra güvenlik)
+            const cleanSlug = slug.replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+            fileName = `${cleanSlug}_${timestamp}${extension}`;
+        } else {
+            // Slug yoksa eski yöntem: type_timestamp_random.ext
+            const randomStr = Math.random().toString(36).substring(2, 8);
+            fileName = `${type}_${timestamp}_${randomStr}${extension}`;
+        }
 
         // Upload klasörü
         const baseUploadDir = getUploadDir();

@@ -123,6 +123,9 @@ export default function UrunDuzenle() {
             const uploadFormData = new FormData()
             uploadFormData.append('file', file)
             uploadFormData.append('type', 'urun')
+            if (formData.slug) {
+                uploadFormData.append('slug', formData.slug)
+            }
 
             const res = await fetch('/api/upload', {
                 method: 'POST',
@@ -157,6 +160,9 @@ export default function UrunDuzenle() {
                 const uploadFormData = new FormData()
                 uploadFormData.append('file', file)
                 uploadFormData.append('type', 'urun')
+                if (formData.slug) {
+                    uploadFormData.append('slug', formData.slug)
+                }
 
                 const res = await fetch('/api/upload', {
                     method: 'POST',
