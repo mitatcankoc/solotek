@@ -30,9 +30,6 @@ export default function Footer1() {
                                             <Link href="/urunler/barkod-okuyucular">Barkod Okuyucular</Link>
                                         </li>
                                         <li>
-                                            <Link href="/urunler/mobil-yazicilar">Mobil Yazıcılar</Link>
-                                        </li>
-                                        <li>
                                             <Link href="/urunler/endustriyel-panel-pc">Endüstriyel Panel PC</Link>
                                         </li>
                                     </ul>
