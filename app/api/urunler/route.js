@@ -108,7 +108,7 @@ export async function POST(request) {
         const ad = data.ad || data.name;
         const slug = data.slug;
         const kategori_id = data.kategori_id;
-        const marka_id = data.marka_id;
+        const marka_id = data.marka_id || null; // Boş string ise null yap (FK hatası önleme)
         const kisa_aciklama = data.kisa_aciklama || data.short_description;
         const aciklama = data.aciklama || data.description;
         const resim = data.resim || data.image;
