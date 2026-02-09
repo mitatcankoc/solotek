@@ -343,8 +343,8 @@ export default function UrunDuzenle() {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        if (!formData.kategori_id || !formData.marka_id) {
-            alert('Lütfen kategori ve marka seçin')
+        if (!formData.kategori_id) {
+            alert('Lütfen kategori seçin')
             return
         }
 
@@ -614,18 +614,18 @@ export default function UrunDuzenle() {
                                 </select>
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>Marka *</label>
-                                <select name="marka_id" value={formData.marka_id} onChange={handleChange} required
+                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: '#333' }}>Marka</label>
+                                <select name="marka_id" value={formData.marka_id} onChange={handleChange}
                                     style={{ width: '100%', padding: '12px 15px', border: '1px solid #e0e0e0', borderRadius: '10px', fontSize: '14px', outline: 'none' }}>
-                                    <option value="">Marka Seçin</option>
+                                    <option value="">Marka Seçin (İsteğe Bağlı)</option>
                                     {filteredMarkalar.map(marka => (
                                         <option key={marka.id} value={marka.id}>{marka.name}</option>
                                     ))}
                                 </select>
                                 {formData.kategori_id && filteredMarkalar.length === 0 && (
-                                    <p style={{ color: '#f59e0b', fontSize: '12px', marginTop: '8px' }}>
-                                        <i className="fa-solid fa-exclamation-triangle" style={{ marginRight: '5px' }}></i>
-                                        Bu kategoride tanımlı marka yok. Önce marka ekleyin.
+                                    <p style={{ color: '#888', fontSize: '12px', marginTop: '8px' }}>
+                                        <i className="fa-solid fa-info-circle" style={{ marginRight: '5px' }}></i>
+                                        Bu kategoride tanımlı marka yok.
                                     </p>
                                 )}
                             </div>
