@@ -11,6 +11,7 @@ export default function CategoryPage() {
     const [kategoriData, setKategoriData] = useState(null)
     const [allKategoriler, setAllKategoriler] = useState([])
     const [markalar, setMarkalar] = useState([])
+    const [urunler, setUrunler] = useState([]) // Markasız ürünler için
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -33,7 +34,16 @@ export default function CategoryPage() {
                     // Bu kategorideki markaları getir
                     const markaRes = await fetch(`/api/markalar?kategori=${current.id}`)
                     if (markaRes.ok) {
-                        setMarkalar(await markaRes.json())
+                        const markaData = await markaRes.json()
+                        setMarkalar(markaData)
+
+                        // Eğer marka yoksa, doğrudan ürünleri getir
+                        if (markaData.length === 0) {
+                            const urunRes = await fetch(`/api/urunler?kategori_slug=${kategori}`)
+                            if (urunRes.ok) {
+                                setUrunler(await urunRes.json())
+                            }
+                        }
                     }
                 }
             }
@@ -140,7 +150,7 @@ export default function CategoryPage() {
                                     </div>
                                 </div>
 
-                                {/* Markalar Grid */}
+                                {/* Sağ İçerik */}
                                 <div className="col-md-9">
                                     <div className="products-wrap">
                                         {/* Başlık */}
@@ -149,13 +159,8 @@ export default function CategoryPage() {
                                             <p style={{ color: '#666' }}>{kategoriData.description}</p>
                                         </div>
 
-                                        {markalar.length === 0 ? (
-                                            <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8f9fa', borderRadius: '12px' }}>
-                                                <i className="fa-solid fa-box-open" style={{ fontSize: '50px', color: '#ddd', marginBottom: '20px' }}></i>
-                                                <h3 style={{ color: '#666', marginBottom: '10px' }}>Bu kategoride henüz marka eklenmemiş</h3>
-                                                <p style={{ color: '#999' }}>Yakında yeni markalar eklenecek.</p>
-                                            </div>
-                                        ) : (
+                                        {/* Marka varsa markaları göster */}
+                                        {markalar.length > 0 ? (
                                             <div className="row">
                                                 {markalar.map((brand) => (
                                                     <div className="col-md-3 col-sm-4 col-6" key={brand.id}>
@@ -202,6 +207,78 @@ export default function CategoryPage() {
                                                         </div>
                                                     </div>
                                                 ))}
+                                            </div>
+                                        ) : urunler.length > 0 ? (
+                                            /* Marka yoksa ürünleri doğrudan göster */
+                                            <div className="row">
+                                                {urunler.map((urun) => (
+                                                    <div className="col-md-4 col-sm-6 col-6" key={urun.id}>
+                                                        <div className="single-product" style={{ marginBottom: '30px' }}>
+                                                            <Link href={`/urun/${urun.slug}`}>
+                                                                <div className="product-image" style={{
+                                                                    background: '#fff',
+                                                                    border: '1px solid #eee',
+                                                                    borderRadius: '8px',
+                                                                    padding: '15px',
+                                                                    height: '200px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center',
+                                                                    transition: 'all 0.3s'
+                                                                }}>
+                                                                    {urun.image || urun.resim ? (
+                                                                        <img
+                                                                            src={urun.image || urun.resim}
+                                                                            alt={urun.name || urun.ad}
+                                                                            style={{
+                                                                                maxWidth: '100%',
+                                                                                maxHeight: '170px',
+                                                                                objectFit: 'contain'
+                                                                            }}
+                                                                        />
+                                                                    ) : (
+                                                                        <div style={{ textAlign: 'center' }}>
+                                                                            <i className="fa-solid fa-box" style={{ fontSize: '50px', color: '#ddd' }}></i>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                <div className="product-content" style={{ padding: '15px 10px' }}>
+                                                                    <h6 style={{
+                                                                        fontSize: '14px',
+                                                                        fontWeight: '600',
+                                                                        color: '#161540',
+                                                                        marginBottom: '5px',
+                                                                        display: '-webkit-box',
+                                                                        WebkitLineClamp: 2,
+                                                                        WebkitBoxOrient: 'vertical',
+                                                                        overflow: 'hidden'
+                                                                    }}>
+                                                                        {urun.name || urun.ad}
+                                                                    </h6>
+                                                                    {(urun.short_description || urun.kisa_aciklama) && (
+                                                                        <p style={{
+                                                                            fontSize: '12px',
+                                                                            color: '#888',
+                                                                            margin: 0,
+                                                                            display: '-webkit-box',
+                                                                            WebkitLineClamp: 2,
+                                                                            WebkitBoxOrient: 'vertical',
+                                                                            overflow: 'hidden'
+                                                                        }}>
+                                                                            {urun.short_description || urun.kisa_aciklama}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </Link>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8f9fa', borderRadius: '12px' }}>
+                                                <i className="fa-solid fa-box-open" style={{ fontSize: '50px', color: '#ddd', marginBottom: '20px' }}></i>
+                                                <h3 style={{ color: '#666', marginBottom: '10px' }}>Bu kategoride henüz ürün eklenmemiş</h3>
+                                                <p style={{ color: '#999' }}>Yakında yeni ürünler eklenecek.</p>
                                             </div>
                                         )}
                                     </div>
