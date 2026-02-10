@@ -21,7 +21,7 @@ export default function Footer1() {
                                 <div className="footer-menu">
                                     <ul>
                                         <li>
-                                            <Link href="/urunler/el-terminalleri">El Terminalleri</Link>
+                                            <Link href="/urunler/terminaller">Terminaller</Link>
                                         </li>
                                         <li>
                                             <Link href="/urunler/barkod-yazicilar">Barkod Yazıcılar</Link>
@@ -31,6 +31,9 @@ export default function Footer1() {
                                         </li>
                                         <li>
                                             <Link href="/urunler/endustriyel-panel-pc">Endüstriyel Panel PC</Link>
+                                        </li>
+                                        <li>
+                                            <Link href="/urunler/tablet">Tabletler</Link>
                                         </li>
                                     </ul>
                                 </div>

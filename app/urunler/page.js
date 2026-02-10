@@ -37,7 +37,17 @@ function ProductsContent() {
             ])
             if (katRes.ok) {
                 const katData = await katRes.json()
-                setKategoriler(Array.isArray(katData) ? katData : [])
+                // Öncelikli sıralama: belirli kategoriler en başta olsun
+                const priorityOrder = ['terminaller', 'el-terminalleri', 'barkod-okuyucular', 'barkod-yazicilar', 'tablet', 'tabletler']
+                const sorted = (Array.isArray(katData) ? katData : []).sort((a, b) => {
+                    const aIdx = priorityOrder.indexOf(a.slug)
+                    const bIdx = priorityOrder.indexOf(b.slug)
+                    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx
+                    if (aIdx !== -1) return -1
+                    if (bIdx !== -1) return 1
+                    return 0
+                })
+                setKategoriler(sorted)
             }
             if (markaRes.ok) {
                 const markaData = await markaRes.json()
