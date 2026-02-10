@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tüm sürücüleri getir (arama ve filtre destekli)
 export async function GET(request) {
@@ -10,39 +11,44 @@ export async function GET(request) {
         const markaId = searchParams.get('marka');
         const status = searchParams.get('status');
 
-        let query = 'SELECT s.*, k.ad as kategori_adi, m.ad as marka_adi FROM suruculer s LEFT JOIN kategoriler k ON s.kategori_id = k.id LEFT JOIN markalar m ON s.marka_id = m.id WHERE 1=1';
-        const params = [];
+        // Filtreli sorgular için benzersiz cache key oluştur
+        const filterKey = `${status||''}_${search||''}_${kategoriId||''}_${markaId||''}`;
+        const cacheKey = filterKey === '___' ? CACHE_KEYS.SURUCULER_ALL : CACHE_KEYS.SURUCULER_FILTERED(filterKey);
 
-        if (status === 'Aktif') {
-            query += ' AND s.aktif = 1';
-        }
+        const result = await cacheQuery(cacheKey, 'suruculer', async () => {
+            let query = 'SELECT s.*, k.ad as kategori_adi, m.ad as marka_adi FROM suruculer s LEFT JOIN kategoriler k ON s.kategori_id = k.id LEFT JOIN markalar m ON s.marka_id = m.id WHERE 1=1';
+            const params = [];
 
-        if (search) {
-            query += ' AND (s.baslik LIKE ? OR s.aciklama LIKE ? OR s.model LIKE ?)';
-            params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-        }
+            if (status === 'Aktif') {
+                query += ' AND s.aktif = 1';
+            }
 
-        if (kategoriId) {
-            query += ' AND s.kategori_id = ?';
-            params.push(kategoriId);
-        }
+            if (search) {
+                query += ' AND (s.baslik LIKE ? OR s.aciklama LIKE ? OR s.model LIKE ?)';
+                params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+            }
 
-        if (markaId) {
-            query += ' AND s.marka_id = ?';
-            params.push(markaId);
-        }
+            if (kategoriId) {
+                query += ' AND s.kategori_id = ?';
+                params.push(kategoriId);
+            }
 
-        query += ' ORDER BY s.baslik ASC, s.created_at DESC';
+            if (markaId) {
+                query += ' AND s.marka_id = ?';
+                params.push(markaId);
+            }
 
-        const [rows] = await pool.query(query, params);
+            query += ' ORDER BY s.baslik ASC, s.created_at DESC';
 
-        // Admin panel uyumluluğu için alias ekle
-        const result = rows.map(row => ({
-            ...row,
-            urun_adi: row.model || '',
-            surucu_adi: row.baslik || '',
-            status: row.aktif ? 'Aktif' : 'Pasif'
-        }));
+            const [rows] = await pool.query(query, params);
+
+            return rows.map(row => ({
+                ...row,
+                urun_adi: row.model || '',
+                surucu_adi: row.baslik || '',
+                status: row.aktif ? 'Aktif' : 'Pasif'
+            }));
+        });
 
         return NextResponse.json(result);
     } catch (error) {
@@ -77,6 +83,9 @@ export async function POST(request) {
             [baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif === 0 ? 0 : 1, kategori_id, marka_id]
         );
 
+        // Cache'i temizle
+        invalidateCache('suruculer');
+
         return NextResponse.json({
             message: 'Sürücü başarıyla eklendi',
             id: result.insertId
@@ -98,6 +107,10 @@ export async function DELETE(request) {
         }
 
         await pool.query('DELETE FROM suruculer WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('suruculer');
+
         return NextResponse.json({ message: 'Sürücü başarıyla silindi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);

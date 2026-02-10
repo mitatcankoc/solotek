@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // Türkçe karakterleri dönüştür ve slug oluştur
 function createSlug(text) {
@@ -29,20 +30,22 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const all = searchParams.get('all');
 
-        // Admin paneli için tüm blogları getir, yoksa sadece yayındakileri
-        let query = 'SELECT * FROM blogs';
-        if (!all) {
-            query += ' WHERE is_published = 1';
-        }
-        query += ' ORDER BY created_at DESC';
+        const cacheKey = all ? CACHE_KEYS.BLOGS_ALL : CACHE_KEYS.BLOGS_PUBLISHED;
 
-        const [rows] = await pool.query(query);
+        const result = await cacheQuery(cacheKey, 'blogs', async () => {
+            let query = 'SELECT * FROM blogs';
+            if (!all) {
+                query += ' WHERE is_published = 1';
+            }
+            query += ' ORDER BY created_at DESC';
 
-        // Admin panel uyumluluğu için alias ekle
-        const result = rows.map(row => ({
-            ...row,
-            status: row.is_published ? 'Yayında' : 'Taslak'
-        }));
+            const [rows] = await pool.query(query);
+
+            return rows.map(row => ({
+                ...row,
+                status: row.is_published ? 'Yayında' : 'Taslak'
+            }));
+        });
 
         return NextResponse.json(result);
     } catch (error) {
@@ -74,6 +77,9 @@ export async function POST(request) {
             [title, slug, excerpt || '', content, category, image, author || 'Admin', isPublished ?? 1, is_featured ?? 0]
         );
 
+        // Cache'i temizle
+        invalidateCache('blogs');
+
         return NextResponse.json({
             message: 'Blog başarıyla eklendi',
             id: result.insertId,
@@ -96,6 +102,10 @@ export async function DELETE(request) {
         }
 
         await pool.query('DELETE FROM blogs WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('blogs');
+
         return NextResponse.json({ message: 'Blog başarıyla silindi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);

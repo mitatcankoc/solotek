@@ -1,27 +1,29 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { sendDemoRequestEmail } from '@/lib/email';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tüm demo taleplerini getir
 export async function GET() {
     try {
-        const [rows] = await pool.query('SELECT * FROM demo_talep ORDER BY created_at DESC');
+        const mappedRows = await cacheQuery(CACHE_KEYS.DEMO_TALEP_ALL, 'demo_talep', async () => {
+            const [rows] = await pool.query('SELECT * FROM demo_talep ORDER BY created_at DESC');
 
-        // Veritabanı kolonlarını frontend isimleriyle map et
-        const mappedRows = rows.map(row => ({
-            id: row.id,
-            name: row.ad_soyad,
-            email: row.email,
-            phone: row.telefon,
-            company: row.firma,
-            sector: row.sektor,
-            product: row.urun_ilgi,
-            message: row.mesaj,
-            demo_type: row.demo_turu,
-            status: row.durum || 'Yeni',
-            notes: row.notlar,
-            created_at: row.created_at
-        }));
+            return rows.map(row => ({
+                id: row.id,
+                name: row.ad_soyad,
+                email: row.email,
+                phone: row.telefon,
+                company: row.firma,
+                sector: row.sektor,
+                product: row.urun_ilgi,
+                message: row.mesaj,
+                demo_type: row.demo_turu,
+                status: row.durum || 'Yeni',
+                notes: row.notlar,
+                created_at: row.created_at
+            }));
+        });
 
         return NextResponse.json(mappedRows);
     } catch (error) {
@@ -55,6 +57,9 @@ export async function POST(request) {
             [ad_soyad, email, telefon, firma || null, sektor || null, urun_ilgi || null, mesaj || null, 'beklemede', ip_adresi]
         );
 
+        // Cache'i temizle
+        invalidateCache('demo_talep');
+
         // Email gönder
         try {
             await sendDemoRequestEmail({ ad_soyad, email, telefon, firma, sektor, urun_ilgi, mesaj });
@@ -81,6 +86,10 @@ export async function DELETE(request) {
         const id = searchParams.get('id');
 
         await pool.query('DELETE FROM demo_talep WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('demo_talep');
+
         return NextResponse.json({ message: 'Talep silindi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
@@ -103,6 +112,10 @@ export async function PUT(request) {
         } else {
             await pool.query('UPDATE demo_talep SET durum = ? WHERE id = ?', [newDurum, id]);
         }
+
+        // Cache'i temizle
+        invalidateCache('demo_talep');
+
         return NextResponse.json({ message: 'Durum güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);

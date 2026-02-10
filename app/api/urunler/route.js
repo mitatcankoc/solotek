@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Ürünleri getir (filtreleme destekli)
 export async function GET(request) {
@@ -13,80 +14,84 @@ export async function GET(request) {
         const search = searchParams.get('search');
         const limit = searchParams.get('limit');
 
-        let query = `
-            SELECT u.*, 
-                   k.ad as kategori_adi, k.slug as kategori_slug,
-                   m.ad as marka_adi, m.slug as marka_slug, m.logo as marka_logo
-            FROM urunler u
-            LEFT JOIN kategoriler k ON u.kategori_id = k.id
-            LEFT JOIN markalar m ON u.marka_id = m.id
-            WHERE u.aktif = 1
-        `;
-        let params = [];
+        // Benzersiz cache key oluştur
+        const filterKey = `${kategoriId||''}_${kategoriSlug||''}_${markaId||''}_${markaSlug||''}_${featured||''}_${search||''}_${limit||''}`;
+        const cacheKey = filterKey === '______' ? CACHE_KEYS.URUNLER_ALL : CACHE_KEYS.URUNLER_FILTERED(filterKey);
 
-        if (kategoriId) {
-            query += ' AND u.kategori_id = ?';
-            params.push(kategoriId);
-        }
+        const result = await cacheQuery(cacheKey, 'urunler', async () => {
+            let query = `
+                SELECT u.*, 
+                       k.ad as kategori_adi, k.slug as kategori_slug,
+                       m.ad as marka_adi, m.slug as marka_slug, m.logo as marka_logo
+                FROM urunler u
+                LEFT JOIN kategoriler k ON u.kategori_id = k.id
+                LEFT JOIN markalar m ON u.marka_id = m.id
+                WHERE u.aktif = 1
+            `;
+            let params = [];
 
-        if (kategoriSlug) {
-            query += ' AND k.slug = ?';
-            params.push(kategoriSlug);
-        }
-
-        if (markaId) {
-            query += ' AND u.marka_id = ?';
-            params.push(markaId);
-        }
-
-        if (markaSlug) {
-            query += ' AND m.slug = ?';
-            params.push(markaSlug);
-        }
-
-        if (featured === 'true') {
-            query += ' AND u.one_cikan = 1';
-        }
-
-        if (search) {
-            query += ' AND (u.ad LIKE ? OR u.aciklama LIKE ? OR u.kisa_aciklama LIKE ?)';
-            const searchTerm = `%${search}%`;
-            params.push(searchTerm, searchTerm, searchTerm);
-        }
-
-        query += ' ORDER BY u.one_cikan DESC, u.sira ASC, u.ad ASC';
-
-        if (limit) {
-            query += ` LIMIT ${parseInt(limit)}`;
-        }
-
-        const [rows] = await pool.query(query, params);
-
-        // JSON string alanlarını parse et
-        const parseJsonField = (field) => {
-            if (!field) return [];
-            if (Array.isArray(field)) return field;
-            try {
-                const parsed = JSON.parse(field);
-                return Array.isArray(parsed) ? parsed : [];
-            } catch {
-                return [];
+            if (kategoriId) {
+                query += ' AND u.kategori_id = ?';
+                params.push(kategoriId);
             }
-        };
 
-        // Admin panel uyumluluğu için alias ekle
-        const result = rows.map(row => ({
-            ...row,
-            name: row.ad,
-            short_description: row.kisa_aciklama,
-            description: row.aciklama,
-            image: row.resim,
-            gallery: parseJsonField(row.galeri),
-            documents: parseJsonField(row.dokumanlar),
-            accessories: parseJsonField(row.aksesuarlar),
-            status: row.aktif ? 'Aktif' : 'Pasif',
-            featured: row.one_cikan === 1
-        }));
+            if (kategoriSlug) {
+                query += ' AND k.slug = ?';
+                params.push(kategoriSlug);
+            }
+
+            if (markaId) {
+                query += ' AND u.marka_id = ?';
+                params.push(markaId);
+            }
+
+            if (markaSlug) {
+                query += ' AND m.slug = ?';
+                params.push(markaSlug);
+            }
+
+            if (featured === 'true') {
+                query += ' AND u.one_cikan = 1';
+            }
+
+            if (search) {
+                query += ' AND (u.ad LIKE ? OR u.aciklama LIKE ? OR u.kisa_aciklama LIKE ?)';
+                const searchTerm = `%${search}%`;
+                params.push(searchTerm, searchTerm, searchTerm);
+            }
+
+            query += ' ORDER BY u.one_cikan DESC, u.sira ASC, u.ad ASC';
+
+            if (limit) {
+                query += ` LIMIT ${parseInt(limit)}`;
+            }
+
+            const [rows] = await pool.query(query, params);
+
+            const parseJsonField = (field) => {
+                if (!field) return [];
+                if (Array.isArray(field)) return field;
+                try {
+                    const parsed = JSON.parse(field);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch {
+                    return [];
+                }
+            };
+
+            return rows.map(row => ({
+                ...row,
+                name: row.ad,
+                short_description: row.kisa_aciklama,
+                description: row.aciklama,
+                image: row.resim,
+                gallery: parseJsonField(row.galeri),
+                documents: parseJsonField(row.dokumanlar),
+                accessories: parseJsonField(row.aksesuarlar),
+                status: row.aktif ? 'Aktif' : 'Pasif',
+                featured: row.one_cikan === 1
+            }));
+        });
 
         return NextResponse.json(result);
     } catch (error) {
@@ -140,6 +145,9 @@ export async function POST(request) {
             ]
         );
 
+        // Cache'i temizle
+        invalidateCache('urunler');
+
         return NextResponse.json({
             message: 'Ürün başarıyla eklendi',
             id: result.insertId
@@ -164,6 +172,9 @@ export async function DELETE(request) {
         }
 
         await pool.query('DELETE FROM urunler WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('urunler');
 
         return NextResponse.json({ message: 'Ürün başarıyla silindi' });
     } catch (error) {

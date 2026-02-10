@@ -1,64 +1,69 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tek ürün getir
 export async function GET(request, context) {
     try {
         const { id } = await context.params;
 
-        // Önce slug ile ara, bulamazsan id ile ara
-        let [rows] = await pool.query(`
-            SELECT u.*, 
-                   k.ad as kategori_adi, k.slug as kategori_slug,
-                   m.ad as marka_adi, m.slug as marka_slug, m.logo as marka_logo
-            FROM urunler u
-            LEFT JOIN kategoriler k ON u.kategori_id = k.id
-            LEFT JOIN markalar m ON u.marka_id = m.id
-            WHERE u.slug = ?
-        `, [id]);
-
-        if (rows.length === 0) {
-            [rows] = await pool.query(`
+        const urun = await cacheQuery(CACHE_KEYS.URUN_DETAIL(id), 'urunler', async () => {
+            // Önce slug ile ara, bulamazsan id ile ara
+            let [rows] = await pool.query(`
                 SELECT u.*, 
                        k.ad as kategori_adi, k.slug as kategori_slug,
                        m.ad as marka_adi, m.slug as marka_slug, m.logo as marka_logo
                 FROM urunler u
                 LEFT JOIN kategoriler k ON u.kategori_id = k.id
                 LEFT JOIN markalar m ON u.marka_id = m.id
-                WHERE u.id = ?
+                WHERE u.slug = ?
             `, [id]);
-        }
 
-        if (rows.length === 0) {
+            if (rows.length === 0) {
+                [rows] = await pool.query(`
+                    SELECT u.*, 
+                           k.ad as kategori_adi, k.slug as kategori_slug,
+                           m.ad as marka_adi, m.slug as marka_slug, m.logo as marka_logo
+                    FROM urunler u
+                    LEFT JOIN kategoriler k ON u.kategori_id = k.id
+                    LEFT JOIN markalar m ON u.marka_id = m.id
+                    WHERE u.id = ?
+                `, [id]);
+            }
+
+            if (rows.length === 0) {
+                return null;
+            }
+
+            const parseJsonField = (field) => {
+                if (!field) return [];
+                if (Array.isArray(field)) return field;
+                try {
+                    const parsed = JSON.parse(field);
+                    return Array.isArray(parsed) ? parsed : [];
+                } catch {
+                    return [];
+                }
+            };
+
+            return {
+                ...rows[0],
+                name: rows[0].ad,
+                short_description: rows[0].kisa_aciklama,
+                description: rows[0].aciklama,
+                image: rows[0].resim,
+                gallery: parseJsonField(rows[0].galeri),
+                features: parseJsonField(rows[0].ozellikler),
+                documents: parseJsonField(rows[0].dokumanlar),
+                accessories: parseJsonField(rows[0].aksesuarlar),
+                status: rows[0].aktif ? 'Aktif' : 'Pasif',
+                featured: rows[0].one_cikan === 1
+            };
+        });
+
+        if (!urun) {
             return NextResponse.json({ error: 'Ürün bulunamadı' }, { status: 404 });
         }
-
-        // JSON string alanlarını parse et
-        const parseJsonField = (field) => {
-            if (!field) return [];
-            if (Array.isArray(field)) return field;
-            try {
-                const parsed = JSON.parse(field);
-                return Array.isArray(parsed) ? parsed : [];
-            } catch {
-                return [];
-            }
-        };
-
-        // Admin panel uyumluluğu için alias ekle
-        const urun = {
-            ...rows[0],
-            name: rows[0].ad,
-            short_description: rows[0].kisa_aciklama,
-            description: rows[0].aciklama,
-            image: rows[0].resim,
-            gallery: parseJsonField(rows[0].galeri),
-            features: parseJsonField(rows[0].ozellikler),
-            documents: parseJsonField(rows[0].dokumanlar),
-            accessories: parseJsonField(rows[0].aksesuarlar),
-            status: rows[0].aktif ? 'Aktif' : 'Pasif',
-            featured: rows[0].one_cikan === 1
-        };
 
         return NextResponse.json(urun);
     } catch (error) {
@@ -110,6 +115,9 @@ export async function PUT(request, context) {
             ]
         );
 
+        // Cache'i temizle
+        invalidateCache('urunler');
+
         return NextResponse.json({ message: 'Ürün başarıyla güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
@@ -123,6 +131,9 @@ export async function DELETE(request, context) {
         const { id } = await context.params;
 
         await pool.query('DELETE FROM urunler WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('urunler');
 
         return NextResponse.json({ message: 'Ürün başarıyla silindi' });
     } catch (error) {

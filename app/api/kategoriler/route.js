@@ -1,28 +1,30 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tüm kategorileri getir
 export async function GET() {
     try {
-        const [rows] = await pool.query(`
-            SELECT k.*, 
-                   COUNT(DISTINCT u.id) as urun_sayisi
-            FROM kategoriler k
-            LEFT JOIN urunler u ON k.id = u.kategori_id
-            WHERE k.aktif = 1
-            GROUP BY k.id
-            ORDER BY k.sira ASC, k.ad ASC
-        `);
+        const result = await cacheQuery(CACHE_KEYS.KATEGORILER_ALL, 'kategoriler', async () => {
+            const [rows] = await pool.query(`
+                SELECT k.*, 
+                       COUNT(DISTINCT u.id) as urun_sayisi
+                FROM kategoriler k
+                LEFT JOIN urunler u ON k.id = u.kategori_id
+                WHERE k.aktif = 1
+                GROUP BY k.id
+                ORDER BY k.sira ASC, k.ad ASC
+            `);
 
-        // Admin panel uyumluluğu için alias ekle
-        const result = rows.map(row => ({
-            ...row,
-            name: row.ad,
-            description: row.aciklama,
-            image: row.resim,
-            status: row.aktif ? 'Aktif' : 'Pasif',
-            sort_order: row.sira
-        }));
+            return rows.map(row => ({
+                ...row,
+                name: row.ad,
+                description: row.aciklama,
+                image: row.resim,
+                status: row.aktif ? 'Aktif' : 'Pasif',
+                sort_order: row.sira
+            }));
+        });
 
         return NextResponse.json(result);
     } catch (error) {
@@ -58,6 +60,9 @@ export async function POST(request) {
             [ad, finalSlug, icon || 'fa-box', resim, aciklama, aktif, sira]
         );
 
+        // Cache'i temizle
+        invalidateCache('kategoriler');
+
         return NextResponse.json({
             message: 'Kategori başarıyla eklendi',
             id: result.insertId
@@ -89,6 +94,9 @@ export async function DELETE(request) {
 
         // Kategoriyi sil
         await pool.query('DELETE FROM kategoriler WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('kategoriler');
 
         return NextResponse.json({ message: 'Kategori başarıyla silindi' });
     } catch (error) {

@@ -1,23 +1,25 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { sendContactEmail } from '@/lib/email';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tüm iletişim mesajlarını getir
 export async function GET() {
     try {
-        const [rows] = await pool.query('SELECT * FROM iletisim ORDER BY created_at DESC');
+        const mappedRows = await cacheQuery(CACHE_KEYS.ILETISIM_ALL, 'iletisim', async () => {
+            const [rows] = await pool.query('SELECT * FROM iletisim ORDER BY created_at DESC');
 
-        // Veritabanı kolonlarını frontend isimleriyle map et
-        const mappedRows = rows.map(row => ({
-            id: row.id,
-            name: row.ad_soyad,
-            email: row.email,
-            phone: row.telefon,
-            subject: row.konu,
-            message: row.mesaj,
-            status: row.durum || 'Yeni',
-            created_at: row.created_at
-        }));
+            return rows.map(row => ({
+                id: row.id,
+                name: row.ad_soyad,
+                email: row.email,
+                phone: row.telefon,
+                subject: row.konu,
+                message: row.mesaj,
+                status: row.durum || 'Yeni',
+                created_at: row.created_at
+            }));
+        });
 
         return NextResponse.json(mappedRows);
     } catch (error) {
@@ -50,6 +52,9 @@ export async function POST(request) {
             [ad_soyad, email, telefon || null, konu || null, mesaj, ip_adresi, 'yeni']
         );
 
+        // Cache'i temizle
+        invalidateCache('iletisim');
+
         // Email gönder
         try {
             await sendContactEmail({ ad_soyad, email, telefon, konu, mesaj });
@@ -76,6 +81,10 @@ export async function DELETE(request) {
         const id = searchParams.get('id');
 
         await pool.query('DELETE FROM iletisim WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('iletisim');
+
         return NextResponse.json({ message: 'Mesaj silindi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
@@ -97,6 +106,10 @@ export async function PUT(request) {
         } else {
             await pool.query('UPDATE iletisim SET durum = ? WHERE id = ?', [newDurum, id]);
         }
+
+        // Cache'i temizle
+        invalidateCache('iletisim');
+
         return NextResponse.json({ message: 'Durum güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);

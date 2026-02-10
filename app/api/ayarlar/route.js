@@ -1,27 +1,26 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tüm site ayarlarını getir
 export async function GET() {
     try {
-        // Eksik ayarları kontrol et ve ekle (Seed)
-        const defaults = [
-            { anahtar: 'whatsapp_message', deger: 'Merhaba, ürünleriniz hakkında bilgi almak istiyorum.', tur: 'textarea', aciklama: 'WhatsApp varsayılan mesajı', grup: 'iletisim' }
-        ];
+        const rows = await cacheQuery(CACHE_KEYS.AYARLAR_ALL, 'ayarlar', async () => {
+            // Eksik ayarları kontrol et ve ekle (Seed)
+            const defaults = [
+                { anahtar: 'whatsapp_message', deger: 'Merhaba, ürünleriniz hakkında bilgi almak istiyorum.', tur: 'textarea', aciklama: 'WhatsApp varsayılan mesajı', grup: 'iletisim' }
+            ];
 
-        for (const setting of defaults) {
-            await pool.query(`
-                INSERT IGNORE INTO site_ayarlari (anahtar, deger, tur, aciklama, grup) 
-                VALUES (?, ?, ?, ?, ?)
-            `, [setting.anahtar, setting.deger, setting.tur, setting.aciklama, setting.grup]);
-        }
+            for (const setting of defaults) {
+                await pool.query(`
+                    INSERT IGNORE INTO site_ayarlari (anahtar, deger, tur, aciklama, grup) 
+                    VALUES (?, ?, ?, ?, ?)
+                `, [setting.anahtar, setting.deger, setting.tur, setting.aciklama, setting.grup]);
+            }
 
-        const [rows] = await pool.query('SELECT * FROM site_ayarlari');
-
-        // Frontend'de kolay kullanım için objeye çevir {key: value}
-        // Ayrıca raw data ve meta verileri de içerebilir ama basit kullanım için key-value yeterli
-        // Ancak admin panelde düzenlemek için tam veriye ihtiyaç var.
-        // O yüzden array olarak döndürelim, frontend işlesin.
+            const [data] = await pool.query('SELECT * FROM site_ayarlari');
+            return data;
+        });
 
         return NextResponse.json(rows);
     } catch (error) {
@@ -48,8 +47,6 @@ export async function PUT(request) {
             await connection.beginTransaction();
 
             for (const key of keys) {
-                // Sadece geçerli anahtarları güncelle, güvenlik için
-                // Ancak dinamik olması için site_ayarlari tablosunda olanları güncellemek daha iyi
                 await connection.query(
                     'UPDATE site_ayarlari SET deger = ? WHERE anahtar = ?',
                     [updates[key], key]
@@ -57,6 +54,10 @@ export async function PUT(request) {
             }
 
             await connection.commit();
+
+            // Cache'i temizle
+            invalidateCache('ayarlar');
+
             return NextResponse.json({ message: 'Ayarlar başarıyla güncellendi' });
         } catch (err) {
             await connection.rollback();

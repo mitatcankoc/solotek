@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // Marka kategorileri tablosunu oluştur (Helper function)
 async function ensureTableExists() {
@@ -36,47 +37,51 @@ export async function GET(request, context) {
         // Tablo kontrolü yap
         await ensureTableExists();
 
-        // Önce slug ile ara, bulamazsan id ile ara
-        let [rows] = await pool.query('SELECT * FROM markalar WHERE slug = ?', [id]);
+        const marka = await cacheQuery(CACHE_KEYS.MARKA_DETAIL(id), 'markalar', async () => {
+            // Önce slug ile ara, bulamazsan id ile ara
+            let [rows] = await pool.query('SELECT * FROM markalar WHERE slug = ?', [id]);
 
-        if (rows.length === 0) {
-            [rows] = await pool.query('SELECT * FROM markalar WHERE id = ?', [id]);
-        }
+            if (rows.length === 0) {
+                [rows] = await pool.query('SELECT * FROM markalar WHERE id = ?', [id]);
+            }
 
-        if (rows.length === 0) {
+            if (rows.length === 0) {
+                return null;
+            }
+
+            const markaId = rows[0].id;
+
+            // Önce ilişkili tablodan kategorileri çek
+            let [kategoriler] = await pool.query(`
+                SELECT k.*, k.ad as name 
+                FROM kategoriler k
+                INNER JOIN marka_kategorileri mk ON k.id = mk.kategori_id
+                WHERE mk.marka_id = ?
+            `, [markaId]);
+
+            // Eğer ilişki tablosunda kayıt yoksa, eski yöntemle (ürünler üzerinden) çekip kullanıcıya göster
+            if (kategoriler.length === 0) {
+                [kategoriler] = await pool.query(`
+                    SELECT DISTINCT k.*, k.ad as name FROM kategoriler k
+                    INNER JOIN urunler u ON k.id = u.kategori_id
+                    WHERE u.marka_id = ? AND k.aktif = 1
+                    ORDER BY k.sira ASC, k.ad ASC
+                `, [markaId]);
+            }
+
+            return {
+                ...rows[0],
+                name: rows[0].ad,
+                description: rows[0].aciklama,
+                status: rows[0].aktif ? 'Aktif' : 'Pasif',
+                sort_order: rows[0].sira,
+                kategoriler
+            };
+        });
+
+        if (!marka) {
             return NextResponse.json({ error: 'Marka bulunamadı' }, { status: 404 });
         }
-
-        const markaId = rows[0].id;
-
-        // Önce ilişkili tablodan kategorileri çek
-        let [kategoriler] = await pool.query(`
-            SELECT k.*, k.ad as name 
-            FROM kategoriler k
-            INNER JOIN marka_kategorileri mk ON k.id = mk.kategori_id
-            WHERE mk.marka_id = ?
-        `, [markaId]);
-
-        // Eğer ilişki tablosunda kayıt yoksa, eski yöntemle (ürünler üzerinden) çekip kullanıcıya göster
-        // Böylece veri kaybı görünmez, kullanıcı kaydettiğinde yeni tabloya geçer
-        if (kategoriler.length === 0) {
-            [kategoriler] = await pool.query(`
-                SELECT DISTINCT k.*, k.ad as name FROM kategoriler k
-                INNER JOIN urunler u ON k.id = u.kategori_id
-                WHERE u.marka_id = ? AND k.aktif = 1
-                ORDER BY k.sira ASC, k.ad ASC
-            `, [markaId]);
-        }
-
-        // Admin panel uyumluluğu için alias ekle
-        const marka = {
-            ...rows[0],
-            name: rows[0].ad,
-            description: rows[0].aciklama,
-            status: rows[0].aktif ? 'Aktif' : 'Pasif',
-            sort_order: rows[0].sira,
-            kategoriler
-        };
 
         return NextResponse.json(marka);
     } catch (error) {
@@ -126,6 +131,9 @@ export async function PUT(request, context) {
             );
         }
 
+        // Cache'i temizle
+        invalidateCache('markalar');
+
         return NextResponse.json({ message: 'Marka başarıyla güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
@@ -146,6 +154,9 @@ export async function DELETE(request, context) {
 
         // Markayı sil
         await pool.query('DELETE FROM markalar WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('markalar');
 
         return NextResponse.json({ message: 'Marka başarıyla silindi' });
     } catch (error) {

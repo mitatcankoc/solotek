@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tüm referansları getir
 export async function GET(request) {
@@ -7,22 +8,25 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const all = searchParams.get('all');
 
-        let query = 'SELECT * FROM referanslar';
-        if (!all) {
-            query += ' WHERE aktif = 1';
-        }
-        query += ' ORDER BY sira ASC, created_at DESC';
+        const cacheKey = all ? CACHE_KEYS.REFERANSLAR_ALL : CACHE_KEYS.REFERANSLAR_ACTIVE;
 
-        const [rows] = await pool.query(query);
+        const result = await cacheQuery(cacheKey, 'referanslar', async () => {
+            let query = 'SELECT * FROM referanslar';
+            if (!all) {
+                query += ' WHERE aktif = 1';
+            }
+            query += ' ORDER BY sira ASC, created_at DESC';
 
-        // Admin panel uyumluluğu için alias ekle
-        const result = rows.map(row => ({
-            ...row,
-            name: row.firma_adi,
-            logo: row.logo_url || row.logo,
-            description: row.aciklama,
-            status: row.aktif ? 'Aktif' : 'Pasif'
-        }));
+            const [rows] = await pool.query(query);
+
+            return rows.map(row => ({
+                ...row,
+                name: row.firma_adi,
+                logo: row.logo_url || row.logo,
+                description: row.aciklama,
+                status: row.aktif ? 'Aktif' : 'Pasif'
+            }));
+        });
 
         return NextResponse.json(result);
     } catch (error) {
@@ -57,6 +61,9 @@ export async function POST(request) {
             [firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan, aktif, sira]
         );
 
+        // Cache'i temizle
+        invalidateCache('referanslar');
+
         return NextResponse.json({
             message: 'Referans başarıyla eklendi',
             id: result.insertId
@@ -78,6 +85,10 @@ export async function DELETE(request) {
         }
 
         await pool.query('DELETE FROM referanslar WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('referanslar');
+
         return NextResponse.json({ message: 'Referans başarıyla silindi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);

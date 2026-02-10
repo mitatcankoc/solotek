@@ -1,23 +1,30 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tek sürücü getir
 export async function GET(request, { params }) {
     try {
         const { id } = await params;
-        const [rows] = await pool.query('SELECT * FROM suruculer WHERE id = ?', [id]);
 
-        if (rows.length === 0) {
+        const surucu = await cacheQuery(CACHE_KEYS.SURUCU_DETAIL(id), 'suruculer', async () => {
+            const [rows] = await pool.query('SELECT * FROM suruculer WHERE id = ?', [id]);
+
+            if (rows.length === 0) {
+                return null;
+            }
+
+            return {
+                ...rows[0],
+                urun_adi: rows[0].model || rows[0].baslik,
+                surucu_adi: rows[0].baslik,
+                status: rows[0].aktif ? 'Aktif' : 'Pasif'
+            };
+        });
+
+        if (!surucu) {
             return NextResponse.json({ error: 'Sürücü bulunamadı' }, { status: 404 });
         }
-
-        // Admin panel uyumluluğu için alias ekle
-        const surucu = {
-            ...rows[0],
-            urun_adi: rows[0].model || rows[0].baslik,
-            surucu_adi: rows[0].baslik,
-            status: rows[0].aktif ? 'Aktif' : 'Pasif'
-        };
 
         return NextResponse.json(surucu);
     } catch (error) {
@@ -56,6 +63,9 @@ export async function PUT(request, { params }) {
             [baslik, model, aciklama, versiyon, isletim_sistemi, dosya_url, dosya_boyutu, aktif, kategori_id, marka_id, id]
         );
 
+        // Cache'i temizle
+        invalidateCache('suruculer');
+
         return NextResponse.json({ message: 'Sürücü güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
@@ -68,6 +78,10 @@ export async function DELETE(request, { params }) {
     try {
         const { id } = await params;
         await pool.query('DELETE FROM suruculer WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('suruculer');
+
         return NextResponse.json({ message: 'Sürücü silindi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tüm markaları getir (veya kategoriye göre filtrele)
 // GET - Tüm markaları getir (veya kategoriye göre filtrele)
@@ -30,45 +31,44 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const kategoriId = searchParams.get('kategori');
 
-        let query;
-        let params = [];
+        const cacheKey = kategoriId ? CACHE_KEYS.MARKALAR_BY_KATEGORI(kategoriId) : CACHE_KEYS.MARKALAR_ALL;
 
-        if (kategoriId) {
-            // Sadece bu kategoriye atanmış markaları getir
-            // Hem yeni sistemden (marka_kategorileri) hem de eski sistemden (ürünler) gelenleri birleştir (UNION)
-            // Böylece geçiş sürecinde veri kaybı olmaz
-            query = `
-                SELECT DISTINCT m.*, (SELECT COUNT(DISTINCT u.id) FROM urunler u WHERE u.marka_id = m.id AND u.aktif = 1) as urun_sayisi
-                FROM markalar m
-                LEFT JOIN marka_kategorileri mk ON m.id = mk.marka_id
-                LEFT JOIN urunler u ON m.id = u.marka_id
-                WHERE m.aktif = 1 
-                AND (mk.kategori_id = ? OR (u.kategori_id = ? AND u.aktif = 1))
-                ORDER BY m.sira ASC, m.ad ASC
-            `;
-            params = [kategoriId, kategoriId];
-        } else {
-            // Tüm aktif markaları getir
-            query = `
-                SELECT m.*, COUNT(DISTINCT u.id) as urun_sayisi
-                FROM markalar m
-                LEFT JOIN urunler u ON m.id = u.marka_id
-                WHERE m.aktif = 1
-                GROUP BY m.id
-                ORDER BY m.sira ASC, m.ad ASC
-            `;
-        }
+        const result = await cacheQuery(cacheKey, 'markalar', async () => {
+            let query;
+            let params = [];
 
-        const [rows] = await pool.query(query, params);
+            if (kategoriId) {
+                query = `
+                    SELECT DISTINCT m.*, (SELECT COUNT(DISTINCT u.id) FROM urunler u WHERE u.marka_id = m.id AND u.aktif = 1) as urun_sayisi
+                    FROM markalar m
+                    LEFT JOIN marka_kategorileri mk ON m.id = mk.marka_id
+                    LEFT JOIN urunler u ON m.id = u.marka_id
+                    WHERE m.aktif = 1 
+                    AND (mk.kategori_id = ? OR (u.kategori_id = ? AND u.aktif = 1))
+                    ORDER BY m.sira ASC, m.ad ASC
+                `;
+                params = [kategoriId, kategoriId];
+            } else {
+                query = `
+                    SELECT m.*, COUNT(DISTINCT u.id) as urun_sayisi
+                    FROM markalar m
+                    LEFT JOIN urunler u ON m.id = u.marka_id
+                    WHERE m.aktif = 1
+                    GROUP BY m.id
+                    ORDER BY m.sira ASC, m.ad ASC
+                `;
+            }
 
-        // Admin panel uyumluluğu için alias ekle
-        const result = rows.map(row => ({
-            ...row,
-            name: row.ad,
-            description: row.aciklama,
-            status: row.aktif ? 'Aktif' : 'Pasif',
-            sort_order: row.sira
-        }));
+            const [rows] = await pool.query(query, params);
+
+            return rows.map(row => ({
+                ...row,
+                name: row.ad,
+                description: row.aciklama,
+                status: row.aktif ? 'Aktif' : 'Pasif',
+                sort_order: row.sira
+            }));
+        });
 
         return NextResponse.json(result);
     } catch (error) {
@@ -138,6 +138,9 @@ export async function POST(request) {
             );
         }
 
+        // Cache'i temizle
+        invalidateCache('markalar');
+
         return NextResponse.json({
             message: 'Marka başarıyla eklendi',
             id: markaId
@@ -169,6 +172,9 @@ export async function DELETE(request) {
 
         // Markayı sil
         await pool.query('DELETE FROM markalar WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('markalar');
 
         return NextResponse.json({ message: 'Marka başarıyla silindi' });
     } catch (error) {

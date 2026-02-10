@@ -1,25 +1,31 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tek referans getir (id ile)
 export async function GET(request, context) {
     try {
         const { id } = await context.params;
 
-        const [rows] = await pool.query('SELECT * FROM referanslar WHERE id = ?', [id]);
+        const referans = await cacheQuery(CACHE_KEYS.REFERANS_DETAIL(id), 'referanslar', async () => {
+            const [rows] = await pool.query('SELECT * FROM referanslar WHERE id = ?', [id]);
 
-        if (rows.length === 0) {
+            if (rows.length === 0) {
+                return null;
+            }
+
+            return {
+                ...rows[0],
+                name: rows[0].firma_adi,
+                logo: rows[0].logo_url || rows[0].logo,
+                description: rows[0].aciklama,
+                status: rows[0].aktif ? 'Aktif' : 'Pasif'
+            };
+        });
+
+        if (!referans) {
             return NextResponse.json({ error: 'Referans bulunamadı' }, { status: 404 });
         }
-
-        // Admin panel uyumluluğu için alias ekle
-        const referans = {
-            ...rows[0],
-            name: rows[0].firma_adi,
-            logo: rows[0].logo_url || rows[0].logo,
-            description: rows[0].aciklama,
-            status: rows[0].aktif ? 'Aktif' : 'Pasif'
-        };
 
         return NextResponse.json(referans);
     } catch (error) {
@@ -61,6 +67,9 @@ export async function PUT(request, context) {
             [firma_adi, slug, logo, logo_url, aciklama, sektor, website, one_cikan, aktif, sira, id]
         );
 
+        // Cache'i temizle
+        invalidateCache('referanslar');
+
         return NextResponse.json({ message: 'Referans başarıyla güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
@@ -74,6 +83,9 @@ export async function DELETE(request, context) {
         const { id } = await context.params;
 
         await pool.query('DELETE FROM referanslar WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('referanslar');
 
         return NextResponse.json({ message: 'Referans başarıyla silindi' });
     } catch (error) {

@@ -1,40 +1,46 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { cacheQuery, invalidateCache, CACHE_KEYS } from '@/lib/cache';
 
 // GET - Tek kategori getir
 export async function GET(request, context) {
     try {
         const { id } = await context.params;
 
-        // Önce slug ile ara, bulamazsan id ile ara
-        let [rows] = await pool.query('SELECT * FROM kategoriler WHERE slug = ?', [id]);
+        const kategori = await cacheQuery(CACHE_KEYS.KATEGORI_DETAIL(id), 'kategoriler', async () => {
+            // Önce slug ile ara, bulamazsan id ile ara
+            let [rows] = await pool.query('SELECT * FROM kategoriler WHERE slug = ?', [id]);
 
-        if (rows.length === 0) {
-            [rows] = await pool.query('SELECT * FROM kategoriler WHERE id = ?', [id]);
-        }
+            if (rows.length === 0) {
+                [rows] = await pool.query('SELECT * FROM kategoriler WHERE id = ?', [id]);
+            }
 
-        if (rows.length === 0) {
+            if (rows.length === 0) {
+                return null;
+            }
+
+            // Bu kategorideki markaları ürünler üzerinden getir
+            const [markalar] = await pool.query(`
+                SELECT DISTINCT m.*, m.ad as name FROM markalar m
+                INNER JOIN urunler u ON m.id = u.marka_id
+                WHERE u.kategori_id = ? AND m.aktif = 1
+                ORDER BY m.sira ASC, m.ad ASC
+            `, [rows[0].id]);
+
+            return {
+                ...rows[0],
+                name: rows[0].ad,
+                description: rows[0].aciklama,
+                image: rows[0].resim,
+                status: rows[0].aktif ? 'Aktif' : 'Pasif',
+                sort_order: rows[0].sira,
+                markalar
+            };
+        });
+
+        if (!kategori) {
             return NextResponse.json({ error: 'Kategori bulunamadı' }, { status: 404 });
         }
-
-        // Bu kategorideki markaları ürünler üzerinden getir
-        const [markalar] = await pool.query(`
-            SELECT DISTINCT m.*, m.ad as name FROM markalar m
-            INNER JOIN urunler u ON m.id = u.marka_id
-            WHERE u.kategori_id = ? AND m.aktif = 1
-            ORDER BY m.sira ASC, m.ad ASC
-        `, [rows[0].id]);
-
-        // Admin panel uyumluluğu için alias ekle
-        const kategori = {
-            ...rows[0],
-            name: rows[0].ad,
-            description: rows[0].aciklama,
-            image: rows[0].resim,
-            status: rows[0].aktif ? 'Aktif' : 'Pasif',
-            sort_order: rows[0].sira,
-            markalar
-        };
 
         return NextResponse.json(kategori);
     } catch (error) {
@@ -67,6 +73,9 @@ export async function PUT(request, context) {
             [ad, slug, icon, resim, aciklama, aktif, sira, id]
         );
 
+        // Cache'i temizle
+        invalidateCache('kategoriler');
+
         return NextResponse.json({ message: 'Kategori başarıyla güncellendi' });
     } catch (error) {
         console.error('Veritabanı hatası:', error);
@@ -87,6 +96,9 @@ export async function DELETE(request, context) {
 
         // Kategoriyi sil
         await pool.query('DELETE FROM kategoriler WHERE id = ?', [id]);
+
+        // Cache'i temizle
+        invalidateCache('kategoriler');
 
         return NextResponse.json({ message: 'Kategori başarıyla silindi' });
     } catch (error) {
