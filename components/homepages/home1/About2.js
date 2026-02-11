@@ -59,10 +59,10 @@ export default function About2() {
                                     </div>
                                 </div>
                                 <div className="corner-right-bottom-shape2 position-absolute">
-                                    <img src="/assets/img/shapes/shape-right-bottom2.png" alt="" width={80} height={80} loading="lazy" />
+                                    <img src="/assets/img/shapes/shape-right-bottom2.png" alt="" loading="lazy" />
                                 </div>
                                 <div className="corner-shape2-left position-absolute">
-                                    <img src="/assets/img/shapes/tax-shape2.png" alt="" width={80} height={80} loading="lazy" />
+                                    <img src="/assets/img/shapes/tax-shape2.png" alt="" loading="lazy" />
                                 </div>
                             </div>
                         </div>

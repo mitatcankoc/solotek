@@ -13,10 +13,10 @@ export default function About() {
                                 <div className="about-bg-main-img position-relative top-left-polygon-1">
                                     <img src="/assets/img/about/about21.webp" alt="Solo Teknoloji Hakkımızda" width={600} height={500} loading="lazy" />
                                     <div className="corner-right-bottom-shape2 position-absolute">
-                                        <img src="/assets/img/shapes/shape-right-bottom2.png" alt="Dekoratif köşe elementi" width={80} height={80} loading="lazy" />
+                                        <img src="/assets/img/shapes/shape-right-bottom2.png" alt="Dekoratif köşe elementi" loading="lazy" />
                                     </div>
                                     <div className="corner-shape2-left position-absolute">
-                                        <img src="/assets/img/shapes/tax-shape2.png" alt="Dekoratif şekil" width={80} height={80} loading="lazy" />
+                                        <img src="/assets/img/shapes/tax-shape2.png" alt="Dekoratif şekil" loading="lazy" />
                                     </div>
                                 </div>
                             </div>
