@@ -89,7 +89,7 @@ export default function CategoryPage() {
                         <div className="container">
                             <div className="row">
                                 {/* Sol Sidebar */}
-                                <div className="col-md-3">
+                                <div className="col-md-3 order-2 order-md-1">
                                     <div className="widgets lg-mr-15">
                                         {/* Arama */}
                                         <div className="single-widget padding-less-widget">
@@ -151,7 +151,7 @@ export default function CategoryPage() {
                                 </div>
 
                                 {/* Sağ İçerik */}
-                                <div className="col-md-9">
+                                <div className="col-md-9 order-1 order-md-2">
                                     <div className="products-wrap">
                                         {/* Başlık */}
                                         <div style={{ marginBottom: '30px' }}>
