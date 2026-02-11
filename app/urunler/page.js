@@ -121,7 +121,7 @@ function ProductsContent() {
                     <div className="container">
                         <div className="row">
                             {/* Sol Sidebar */}
-                            <div className="col-md-4">
+                            <div className="col-md-4 order-2 order-md-1">
                                 <div className="widgets lg-mr-15">
                                     {/* Arama */}
                                     <div className="single-widget padding-less-widget">
@@ -204,7 +204,7 @@ function ProductsContent() {
                             </div>
 
                             {/* Sağ İçerik */}
-                            <div className="col-md-8">
+                            <div className="col-md-8 order-1 order-md-2">
                                 {showResults ? (
                                     <>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', flexWrap: 'wrap', gap: '15px' }}>

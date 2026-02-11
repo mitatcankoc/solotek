@@ -6,6 +6,31 @@ import { useEffect, useState } from "react";
 export default function Header7({ scroll, isMobileMenu, handleMobileMenu }) {
     const routerPath = usePathname();
     const [openDropdown, setOpenDropdown] = useState(null);
+    const [kategoriler, setKategoriler] = useState([]);
+
+    useEffect(() => {
+        const fetchKategoriler = async () => {
+            try {
+                const res = await fetch('/api/kategoriler');
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    const priorityOrder = ['terminaller', 'el-terminalleri', 'barkod-okuyucular', 'barkod-yazicilar', 'tablet', 'tabletler'];
+                    const sorted = data.filter(k => k.status === 'Aktif').sort((a, b) => {
+                        const aIdx = priorityOrder.indexOf(a.slug);
+                        const bIdx = priorityOrder.indexOf(b.slug);
+                        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+                        if (aIdx !== -1) return -1;
+                        if (bIdx !== -1) return 1;
+                        return 0;
+                    });
+                    setKategoriler(sorted);
+                }
+            } catch (error) {
+                console.error('Kategoriler yüklenemedi:', error);
+            }
+        };
+        fetchKategoriler();
+    }, []);
 
     const handleMouseEnter = (menu) => {
         setOpenDropdown(menu);
@@ -132,110 +157,34 @@ export default function Header7({ scroll, isMobileMenu, handleMobileMenu }) {
                                     zIndex: 10000,
                                     listStyle: 'none'
                                 }}>
-                                    <li>
-                                        <Link href="/urunler/el-terminalleri" style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '12px',
-                                            padding: '12px 14px',
-                                            color: 'rgba(255, 255, 255, 0.9)',
-                                            fontSize: '0.9rem',
-                                            fontWeight: '500',
-                                            borderRadius: '8px',
-                                            transition: 'all 0.15s ease'
-                                        }}>
-                                            <span style={{
-                                                width: '34px',
-                                                height: '34px',
+                                    {kategoriler.map((kategori) => (
+                                        <li key={kategori.id}>
+                                            <Link href={`/urunler/${kategori.slug}`} style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
-                                                justifyContent: 'center',
-                                                background: 'rgba(255, 255, 255, 0.1)',
-                                                borderRadius: '8px'
+                                                gap: '12px',
+                                                padding: '12px 14px',
+                                                color: 'rgba(255, 255, 255, 0.9)',
+                                                fontSize: '0.9rem',
+                                                fontWeight: '500',
+                                                borderRadius: '8px',
+                                                transition: 'all 0.15s ease'
                                             }}>
-                                                <i className="fa-solid fa-mobile-screen-button"></i>
-                                            </span>
-                                            El Terminalleri
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/urunler/barkod-yazicilar" style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '12px',
-                                            padding: '12px 14px',
-                                            color: 'rgba(255, 255, 255, 0.9)',
-                                            fontSize: '0.9rem',
-                                            fontWeight: '500',
-                                            borderRadius: '8px',
-                                            transition: 'all 0.15s ease'
-                                        }}>
-                                            <span style={{
-                                                width: '34px',
-                                                height: '34px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                background: 'rgba(255, 255, 255, 0.1)',
-                                                borderRadius: '8px'
-                                            }}>
-                                                <i className="fa-solid fa-print"></i>
-                                            </span>
-                                            Barkod Yazıcılar
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/urunler/barkod-okuyucular" style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '12px',
-                                            padding: '12px 14px',
-                                            color: 'rgba(255, 255, 255, 0.9)',
-                                            fontSize: '0.9rem',
-                                            fontWeight: '500',
-                                            borderRadius: '8px',
-                                            transition: 'all 0.15s ease'
-                                        }}>
-                                            <span style={{
-                                                width: '34px',
-                                                height: '34px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                background: 'rgba(255, 255, 255, 0.1)',
-                                                borderRadius: '8px'
-                                            }}>
-                                                <i className="fa-solid fa-qrcode"></i>
-                                            </span>
-                                            Barkod Okuyucular
-                                        </Link>
-                                    </li>
-                                    <li>
-                                        <Link href="/urunler/rfid" style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '12px',
-                                            padding: '12px 14px',
-                                            color: 'rgba(255, 255, 255, 0.9)',
-                                            fontSize: '0.9rem',
-                                            fontWeight: '500',
-                                            borderRadius: '8px',
-                                            transition: 'all 0.15s ease'
-                                        }}>
-                                            <span style={{
-                                                width: '34px',
-                                                height: '34px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                background: 'rgba(255, 255, 255, 0.1)',
-                                                borderRadius: '8px'
-                                            }}>
-                                                <i className="fa-solid fa-wifi"></i>
-                                            </span>
-                                            RFID Sistemleri
-                                        </Link>
-                                    </li>
+                                                <span style={{
+                                                    width: '34px',
+                                                    height: '34px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    background: 'rgba(255, 255, 255, 0.1)',
+                                                    borderRadius: '8px'
+                                                }}>
+                                                    <i className={`fa-solid ${kategori.icon || 'fa-box'}`}></i>
+                                                </span>
+                                                {kategori.name}
+                                            </Link>
+                                        </li>
+                                    ))}
                                 </ul>
                             </li>
                             <li>

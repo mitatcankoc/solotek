@@ -27,7 +27,16 @@ export default function Menu() {
                 const res = await fetch('/api/kategoriler');
                 const data = await res.json();
                 if (Array.isArray(data)) {
-                    setKategoriler(data);
+                    const priorityOrder = ['terminaller', 'el-terminalleri', 'barkod-okuyucular', 'barkod-yazicilar', 'tablet', 'tabletler'];
+                    const sorted = data.filter(k => k.status === 'Aktif').sort((a, b) => {
+                        const aIdx = priorityOrder.indexOf(a.slug);
+                        const bIdx = priorityOrder.indexOf(b.slug);
+                        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+                        if (aIdx !== -1) return -1;
+                        if (bIdx !== -1) return 1;
+                        return 0;
+                    });
+                    setKategoriler(sorted);
                 }
             } catch (error) {
                 console.error('Kategoriler yüklenemedi:', error);
