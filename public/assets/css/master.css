@@ -1545,13 +1545,13 @@ img {
 }
 
 .bg5 {
-  background: url("../img/shape-yes.webp") no-repeat;
+  background: url("../img/shape-yes-opt.webp") no-repeat;
   background-position: right center;
   background-size: contain;
 }
 
 .bg5-left {
-  background: url("../img/bg/bg4.png") no-repeat;
+  background: url("../img/bg/bg4.webp") no-repeat;
   background-position: center center;
   background-size: cover;
 }

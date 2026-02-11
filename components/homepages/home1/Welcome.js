@@ -28,7 +28,7 @@ export default function Welcome() {
                         <div className="col-lg-6 d-none d-lg-block">
                             <div className="hero-img-elements" data-aos="zoom-out" data-aos-duration={800}>
                                 <div className="hero-main-img position-relative top-right-polygon-1">
-                                    <img className="border-radius" src="/assets/img/hero.png" alt="Solo Teknoloji" width={600} height={500} loading="eager" fetchPriority="high" />
+                                    <img className="border-radius" src="/assets/img/hero.webp" alt="Solo Teknoloji" width={600} height={500} loading="eager" fetchPriority="high" />
                                     <div className="corner-shape2 position-absolute">
                                         <img src="/assets/img/shapes/tax-shape1.png" alt="Dekoratif şekil" width={80} height={80} loading="lazy" />
                                     </div>

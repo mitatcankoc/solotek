@@ -11,7 +11,7 @@ export default function About() {
                         <div className="col-lg-6">
                             <div className="about-bg-21 mr50" data-aos="zoom-out" data-aos-duration={800}>
                                 <div className="about-bg-main-img position-relative top-left-polygon-1">
-                                    <img src="/assets/img/about/about21.png" alt="Solo Teknoloji Hakkımızda" width={600} height={500} loading="lazy" />
+                                    <img src="/assets/img/about/about21.webp" alt="Solo Teknoloji Hakkımızda" width={600} height={500} loading="lazy" />
                                     <div className="corner-right-bottom-shape2 position-absolute">
                                         <img src="/assets/img/shapes/shape-right-bottom2.png" alt="Dekoratif köşe elementi" width={80} height={80} loading="lazy" />
                                     </div>
