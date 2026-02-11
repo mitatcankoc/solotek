@@ -94,12 +94,27 @@ export default function BrandProductsPage() {
                 <div>
                     <div className="section-padding2 products">
                         <div className="container">
+                            {/* Mobil Arama - sadece mobilde görünür */}
+                            <div className="d-md-none" style={{ marginBottom: '20px' }}>
+                                <div className="single-widget padding-less-widget">
+                                    <h3>Ürün Ara</h3>
+                                    <div className="search-form-widget">
+                                        <form action="#">
+                                            <input type="search" placeholder="Ürün adı yazın..." />
+                                            <button type="submit" className="search-icon">
+                                                <i className="fa-solid fa-magnifying-glass" />
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="row">
                                 {/* Sol Sidebar */}
                                 <div className="col-md-3 order-2 order-md-1">
                                     <div className="widgets lg-mr-15">
-                                        {/* Arama */}
-                                        <div className="single-widget padding-less-widget">
+                                        {/* Arama - masaüstünde görünür */}
+                                        <div className="single-widget padding-less-widget d-none d-md-block">
                                             <h3>Ürün Ara</h3>
                                             <div className="search-form-widget">
                                                 <form action="#">
