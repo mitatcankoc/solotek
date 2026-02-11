@@ -11,7 +11,7 @@ export default function About2() {
                         <div className="col-lg-6 d-none d-lg-block">
                             <div className="mr50">
                                 <div className="heading2 no-margin-heading">
-                                    <small data-aos="fade-right" data-aos-duration={600} className="heading-top"><img src="/assets/img/icons/hands.svg" alt="" />Neden Solo Teknoloji?</small>
+                                    <small data-aos="fade-right" data-aos-duration={600} className="heading-top"><img src="/assets/img/icons/hands.svg" alt="" width={20} height={20} loading="lazy" />Neden Solo Teknoloji?</small>
                                     <h2 data-aos="fade-right" data-aos-duration={800}>20 Yıllık Deneyim ve Uzmanlık</h2>
                                     <p data-aos="fade-right" data-aos-duration={1000}>Otomasyon sistemleri ile uyumlu yeni nesil yazar kasa, barkodlu barkodsuz ürünler, terazi ve diğer aksesuarın satış, kurulum ve desteğinde öncü kuruluşlar arasında yer alan Solo Teknoloji güvenilir ve kaliteli hizmetler sunmaktadır.
                                     </p>
@@ -30,14 +30,14 @@ export default function About2() {
                                             <div className="conter-icon">
                                                 <i className="fa-solid fa-calendar-check"></i>
                                             </div>
-                                            <h2><CounterUp count={20}/>+</h2>
+                                            <h2><CounterUp count={20} />+</h2>
                                             <p>Yıllık Deneyim</p>
                                         </div>
                                         <div className="single-counter" data-aos="zoom-out" data-aos-duration={800}>
                                             <div className="conter-icon">
                                                 <i className="fa-solid fa-users"></i>
                                             </div>
-                                            <h2><CounterUp count={500}/>+</h2>
+                                            <h2><CounterUp count={500} />+</h2>
                                             <p>Mutlu Müşteri</p>
                                         </div>
                                     </div>
@@ -46,30 +46,30 @@ export default function About2() {
                                             <div className="conter-icon">
                                                 <i className="fa-solid fa-clipboard-check"></i>
                                             </div>
-                                            <h2><CounterUp count={1000}/>+</h2>
+                                            <h2><CounterUp count={1000} />+</h2>
                                             <p>Tamamlanan Proje</p>
                                         </div>
                                         <div className="single-counter" data-aos="zoom-out" data-aos-duration={1200}>
                                             <div className="conter-icon">
                                                 <i className="fa-solid fa-face-smile"></i>
                                             </div>
-                                            <h2><CounterUp count={98}/>%</h2>
+                                            <h2><CounterUp count={98} />%</h2>
                                             <p>Müşteri Memnuniyeti</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="corner-right-bottom-shape2 position-absolute">
-                                    <img src="/assets/img/shapes/shape-right-bottom2.png" alt="" />
+                                    <img src="/assets/img/shapes/shape-right-bottom2.png" alt="" width={80} height={80} loading="lazy" />
                                 </div>
                                 <div className="corner-shape2-left position-absolute">
-                                    <img src="/assets/img/shapes/tax-shape2.png" alt="" />
+                                    <img src="/assets/img/shapes/tax-shape2.png" alt="" width={80} height={80} loading="lazy" />
                                 </div>
                             </div>
                         </div>
                         <div className="col-lg-6 d-lg-none">
                             <div className="mr50">
                                 <div className="heading2 no-margin-heading">
-                                    <small className="heading-top"><img src="/assets/img/icons/hands.svg" alt="" />Neden Solo Teknoloji?</small>
+                                    <small className="heading-top"><img src="/assets/img/icons/hands.svg" alt="" width={20} height={20} loading="lazy" />Neden Solo Teknoloji?</small>
                                     <h2>20 Yıllık Deneyim ve Uzmanlık</h2>
                                     <p>Otomasyon sistemleri ile uyumlu yeni nesil yazar kasa, barkodlu barkodsuz ürünler, terazi ve diğer aksesuarın satış, kurulum ve desteğinde öncü kuruluşlar arasında yer alan Solo Teknoloji güvenilir ve kaliteli hizmetler sunmaktadır.
                                     </p>

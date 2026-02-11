@@ -33,7 +33,13 @@ export default function Layout({ headerStyle, footerStyle, headTitle, metaDescri
     const isInnerPage = !!breadcrumbTitle
 
     useEffect(() => {
-        AOS.init()
+        // AOS'u geciktirilmiş olarak başlat (FCP/LCP iyileştirmesi)
+        const initAOS = () => AOS.init({ once: true, duration: 600, disable: 'mobile' })
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(initAOS)
+        } else {
+            setTimeout(initAOS, 200)
+        }
 
         const handleScroll = () => {
             const currentScrollY = window.scrollY
