@@ -31,19 +31,21 @@ export default function CategoryPage() {
                 if (current) {
                     setKategoriData(current)
 
-                    // Bu kategorideki markaları getir
-                    const markaRes = await fetch(`/api/markalar?kategori=${current.id}`)
-                    if (markaRes.ok) {
-                        const markaData = await markaRes.json()
-                        setMarkalar(markaData)
+                    // Bu kategorideki markaları ve ürünleri paralel getir
+                    const [markaRes, urunRes] = await Promise.all([
+                        fetch(`/api/markalar?kategori=${current.id}`),
+                        fetch(`/api/urunler?kategori_slug=${kategori}`)
+                    ])
 
-                        // Eğer marka yoksa, doğrudan ürünleri getir
-                        if (markaData.length === 0) {
-                            const urunRes = await fetch(`/api/urunler?kategori_slug=${kategori}`)
-                            if (urunRes.ok) {
-                                setUrunler(await urunRes.json())
-                            }
-                        }
+                    let markaData = []
+                    if (markaRes.ok) {
+                        markaData = await markaRes.json()
+                        setMarkalar(Array.isArray(markaData) ? markaData : [])
+                    }
+
+                    if (urunRes.ok) {
+                        const urunData = await urunRes.json()
+                        setUrunler(Array.isArray(urunData) ? urunData : [])
                     }
                 }
             }
@@ -229,7 +231,7 @@ export default function CategoryPage() {
                                                 {urunler.map((urun) => (
                                                     <div className="col-md-4 col-sm-6 col-6" key={urun.id}>
                                                         <div className="single-product" style={{ marginBottom: '30px' }}>
-                                                            <Link href={`/urun/${urun.slug}`}>
+                                                            <Link href={`/urunler/${kategori}/${urun.marka_slug || 'genel'}/${urun.slug}`}>
                                                                 <div className="product-image" style={{
                                                                     background: '#fff',
                                                                     border: '1px solid #eee',
