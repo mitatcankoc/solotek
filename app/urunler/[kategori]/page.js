@@ -2,7 +2,7 @@
 import Layout from "@/components/layout/Layout"
 import Link from "next/link"
 import { useState, useEffect } from 'react'
-import { useParams, notFound } from 'next/navigation'
+import { useParams } from 'next/navigation'
 
 export default function CategoryPage() {
     const params = useParams()
