@@ -9,6 +9,9 @@ const nextConfig = {
         },
         // CSS optimizasyonu
         optimizeCss: false,
+        // Hostinger CPU / process kısıtlamalarına takılmamak için
+        cpus: 2,
+        workerThreads: false,
     },
 
     // Görsel optimizasyonu
